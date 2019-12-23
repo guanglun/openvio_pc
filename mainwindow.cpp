@@ -27,30 +27,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::usbRecvSlot(unsigned char *buf,int len)
 {
-    
-//    buf[len] = '\0';
-    
-//    //DBG("recv:%s",buf);
-    
-//    QString qstr = QString(QLatin1String((const char*)buf));
-//    ui->te_recv->append(qstr);
-//    ui->te_recv->moveCursor(QTextCursor::End);
-    
-    
-    //winusb.img.CONVERT_YUV420PtoRGB24(winusb.img.img,winusb.img.img_rgb,winusb.img.width,winusb.img.high);
-    
-    //winusb.img.simplest_yuv420_graybar(winusb.img.width,winusb.img.high,0,255,10,(char *)winusb.img.img_rgb);
-    
-//    for(int i = 0;i<winusb.img.size;i++)
-//    {
-//        winusb.recv_buf[i] = 0xFF;
-//    }
-
-//    for(int i = 0;i<winusb.img.width*100;i++)
-//    {
-//        winusb.recv_buf[i] = 0x00;
-//    }
-    
     QImage myImage = QImage(winusb.img.img,winusb.img.width,winusb.img.high,QImage::Format_Grayscale8);
     ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
 }
@@ -79,8 +55,10 @@ void MainWindow::disconnectSlot(void)
 
 void MainWindow::on_pb_send_clicked()
 {
-    QByteArray bytes = ui->le_send->text().toUtf8();
-    winusb.send(bytes);
+    //QByteArray bytes = ui->le_send->text().toUtf8();
+    //winusb.send(bytes);
+    
+    //winusb.ctrl();
 }
 
 void MainWindow::onTimeOut()
@@ -107,4 +85,14 @@ void MainWindow::onTimeOut()
     
     winusb.recv_count_1s = 0;
     ui->statusBar->showMessage(str);
+}
+
+void MainWindow::on_pb_cam_start_clicked()
+{
+    winusb.ctrlCamStart();
+}
+
+void MainWindow::on_pb_cam_stop_clicked()
+{
+    winusb.ctrlCamStop();
 }

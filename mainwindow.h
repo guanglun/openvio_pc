@@ -30,6 +30,8 @@ private slots:
     void on_pb_open_clicked();
     void on_pb_send_clicked();
     void onTimeOut();    
+    void on_pb_cam_start_clicked();
+    void on_pb_cam_stop_clicked();
 };
 
 #endif // MAINWINDOW_H

@@ -24,7 +24,7 @@ private:
     
     int ret;
     
-    
+    unsigned char *ctrl_buffer;
     unsigned char recv_buf_tmp[RECV_LEN+1];
     int recv_len,recv_index;
     bool is_open;
@@ -48,6 +48,9 @@ public:
     static void LIBUSB_CALL completeCallback(libusb_transfer *xfer);
     void send(QByteArray byte);
     void recv(void);
+    int sendCtrl(char request,unsigned char *buffer,int len);
+    void ctrlCamStart();
+    void ctrlCamStop();
 signals:
     void recvSignals(unsigned char *buf,int len);
     void disconnectSignals(void);

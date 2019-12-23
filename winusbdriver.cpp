@@ -7,6 +7,8 @@ WinUSBDriver::WinUSBDriver()
     usb_thread = new USBThread();
     
     libusb_init(&m_libusb_context);
+    
+    ctrl_buffer = (unsigned char *)malloc(1024);
 }
 
 WinUSBDriver::~WinUSBDriver()
@@ -21,10 +23,11 @@ WinUSBDriver::~WinUSBDriver()
 #define USB_VID         0x07E4          //USB的产商ID
 #define USB_PID         0x07E4          //USB的产品ID
 
+
 #define EP0ADDR         0x01            //Write端口0地址，通道0
 #define EP1ADDR         0x81            //Read 端口1地址，通道1
 #define EP2ADDR         0x02            //Write端口2地址，通道2
-#define EP3ADDR         0x86            //Read 端口3地址，通道3
+#define EP3ADDR         0x82            //Read 端口3地址，通道3
 
 #define USB_TIMEOUT     10000           //传输数据的时间延迟
 
@@ -244,8 +247,8 @@ void WinUSBDriver::recv(void)
     recv_index = 0;
     while(is_open)
     {
-        DBG("start recv");
-        ret = libusb_bulk_transfer(dev_handle, EP1ADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&recv_len,0);
+        //DBG("start recv");
+        ret = libusb_bulk_transfer(dev_handle, EP3ADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&recv_len,0);
         if(ret < 0)
         {
             DBG("recv error");
@@ -257,7 +260,7 @@ void WinUSBDriver::recv(void)
             recv_count_1s += recv_len;
             if(recv_index >= RECV_LEN)
             {
-                DBG("recv frame ");
+                //DBG("recv frame ");
                 frame_fps++;
                 recv_index = 0;
                 emit recvSignals(recv_buf_tmp,recv_len);
@@ -290,5 +293,48 @@ int WinUSBDriver::close(void)
     DBG("usb close");
     
 }
+
+#define REQUEST_CAMERA_START    0xA0
+#define REQUEST_CAMERA_STOP     0xA1
+
+int WinUSBDriver::sendCtrl(char request,unsigned char *buffer,int len)
+{
+    if(is_open)
+    {
+        if(len == 0 || buffer == NULL)
+        {
+            ret = libusb_control_transfer(dev_handle,LIBUSB_REQUEST_TYPE_VENDOR + LIBUSB_ENDPOINT_IN
+                                          ,request,0,0,ctrl_buffer,1,1000);
+        }else{
+            ret = libusb_control_transfer(dev_handle,LIBUSB_REQUEST_TYPE_VENDOR + LIBUSB_ENDPOINT_IN
+                                          ,request,0,0,buffer,len,1000);
+        }
+            if(ret < 0)
+            {
+                DBG("libusb_control_transfer fail");
+                return 1;
+            }else{
+                if(ctrl_buffer[0] == 'S')
+                {
+                    DBG("libusb_control_transfer success %c",ctrl_buffer[0]);
+                    return 0;
+                }
+            }
+      
+
+    }
+}
+
+void WinUSBDriver::ctrlCamStart()
+{
+    recv_index = 0;
+    sendCtrl(REQUEST_CAMERA_START,NULL,0);
+}
+
+void WinUSBDriver::ctrlCamStop()
+{
+    sendCtrl(REQUEST_CAMERA_STOP,NULL,0);
+}
+
 
 
