@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1231</width>
-    <height>569</height>
+    <width>960</width>
+    <height>571</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -20,35 +20,12 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>10</y>
-      <width>271</width>
-      <height>141</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>接收</string>
-    </property>
-    <widget class="QTextEdit" name="te_recv">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>251</width>
-       <height>111</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
-      <width>211</width>
+      <y>0</y>
+      <width>231</width>
       <height>81</height>
      </rect>
     </property>
@@ -59,7 +36,7 @@
      <property name="geometry">
       <rect>
        <x>130</x>
-       <y>20</y>
+       <y>50</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -126,40 +103,24 @@
       </item>
      </layout>
     </widget>
-   </widget>
-   <widget class="QPushButton" name="pb_send">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>130</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>发送</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="le_send">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>211</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>test</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
+    <widget class="QPushButton" name="pb_scan">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>20</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>扫描</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QLabel" name="lb_img">
     <property name="geometry">
      <rect>
-      <x>530</x>
+      <x>270</x>
       <y>20</y>
       <width>640</width>
       <height>480</height>
@@ -176,9 +137,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>180</y>
-      <width>221</width>
-      <height>121</height>
+      <y>90</y>
+      <width>231</width>
+      <height>111</height>
      </rect>
     </property>
     <property name="title">
@@ -236,14 +197,43 @@
       <string>关闭IMU</string>
      </property>
     </widget>
+    <widget class="QLineEdit" name="le_send">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>test</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pb_send">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>80</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>发送</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>10</y>
+      <x>250</x>
+      <y>0</y>
       <width>701</width>
-      <height>501</height>
+      <height>511</height>
      </rect>
     </property>
     <property name="title">
@@ -253,9 +243,9 @@
    <widget class="QGroupBox" name="groupBox_5">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>180</y>
-      <width>271</width>
+      <x>10</x>
+      <y>200</y>
+      <width>231</width>
       <height>121</height>
      </rect>
     </property>
@@ -304,7 +294,7 @@
     <widget class="QLabel" name="label_6">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>60</y>
        <width>41</width>
        <height>16</height>
@@ -317,7 +307,7 @@
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>20</y>
        <width>41</width>
        <height>16</height>
@@ -330,7 +320,7 @@
     <widget class="QLabel" name="label_8">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>40</y>
        <width>41</width>
        <height>16</height>
@@ -358,7 +348,7 @@
       <rect>
        <x>60</x>
        <y>20</y>
-       <width>71</width>
+       <width>51</width>
        <height>16</height>
       </rect>
      </property>
@@ -371,7 +361,7 @@
       <rect>
        <x>60</x>
        <y>40</y>
-       <width>71</width>
+       <width>51</width>
        <height>16</height>
       </rect>
      </property>
@@ -384,7 +374,7 @@
       <rect>
        <x>60</x>
        <y>60</y>
-       <width>71</width>
+       <width>51</width>
        <height>16</height>
       </rect>
      </property>
@@ -408,7 +398,7 @@
     <widget class="QLabel" name="lb_gyr_x">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>160</x>
        <y>20</y>
        <width>71</width>
        <height>16</height>
@@ -421,7 +411,7 @@
     <widget class="QLabel" name="lb_gyr_y">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>160</x>
        <y>40</y>
        <width>71</width>
        <height>16</height>
@@ -434,7 +424,7 @@
     <widget class="QLabel" name="lb_gyr_z">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>160</x>
        <y>60</y>
        <width>71</width>
        <height>16</height>
@@ -447,7 +437,7 @@
     <widget class="QLabel" name="lb_imu_hz">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>160</x>
        <y>100</y>
        <width>54</width>
        <height>12</height>
@@ -461,13 +451,37 @@
      </property>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>231</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>IMU 3D</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>211</width>
+       <height>161</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout"/>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1231</width>
+     <width>960</width>
      <height>23</height>
     </rect>
    </property>

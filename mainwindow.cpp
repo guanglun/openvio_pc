@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "glview.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,6 +21,12 @@ MainWindow::MainWindow(QWidget *parent) :
     
     //imuStatusLabel = new QLabel("imuStatus");
     //ui->statusBar->addPermanentWidget(imuStatusLabel);
+    
+    GLView *glview = new GLView(this);
+    
+    ui->verticalLayout->addWidget(glview,0,0);
+    
+    
 }
 
 MainWindow::~MainWindow()

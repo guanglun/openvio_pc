@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,7 +30,8 @@ SOURCES += \
     winusbdriver.cpp \
     usbthread.cpp \
     easytool.cpp \
-    image.cpp
+    image.cpp \
+    glview.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,7 +40,8 @@ HEADERS += \
     usbthread.h \
     workspace.h \
     easytool.h \
-    image.h
+    image.h \
+    glview.h
 
 FORMS += \
         mainwindow.ui
@@ -50,3 +52,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 win32: LIBS += "F:\10.qt_workspace\PC_OPENVIO\lib\libusb-1.0.a"
+win32: LIBS+=-lopengl32 -lglu32
