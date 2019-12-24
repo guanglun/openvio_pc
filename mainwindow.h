@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include "winusbdriver.h"
-
+#include "ui_mainwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,10 +19,12 @@ public:
     ~MainWindow();
     
 private:
+    
     WinUSBDriver winusb;
     WinUSBDriver *qwindriver;
     QTimer *timer;
     Ui::MainWindow *ui;
+    QLabel *imuStatusLabel;
     
 private slots:
     void usbRecvSlot(unsigned char *buf,int len);
@@ -32,6 +34,9 @@ private slots:
     void onTimeOut();    
     void on_pb_cam_start_clicked();
     void on_pb_cam_stop_clicked();
+    void on_pb_imu_start_clicked();
+    void on_pb_imu_stop_clicked();
+    void imuSlot(unsigned char *imu_data);
 };
 
 #endif // MAINWINDOW_H

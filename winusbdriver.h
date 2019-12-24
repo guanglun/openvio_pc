@@ -24,21 +24,23 @@ private:
     
     int ret;
     
-    unsigned char *ctrl_buffer;
+    unsigned char *ctrl_buffer,*imu_buffer;
     unsigned char recv_buf_tmp[RECV_LEN+1];
-    int recv_len,recv_index;
+    int camRecvLen,imuRecvLen,recv_index;
     bool is_open;
+    
     libusb_device **devs,*dev;
     libusb_device_handle *dev_handle = NULL;
     struct libusb_device_descriptor desc;
     libusb_config_descriptor *cfg = NULL;
     struct libusb_transfer* m_xfer;
     
-    USBThread *usb_thread;
+    USBThread *camThread,*imuThread;
     libusb_context* m_libusb_context;
+    
 public:
     Image img;
-    unsigned int recv_count_1s = 0,frame_fps = 0;
+    unsigned int recv_count_1s = 0,frame_fps = 0,imu_hz = 0;
     
     WinUSBDriver();
     ~WinUSBDriver();
@@ -47,13 +49,17 @@ public:
     int close(void);
     static void LIBUSB_CALL completeCallback(libusb_transfer *xfer);
     void send(QByteArray byte);
-    void recv(void);
+    void CamRecv(void);
+    void IMURecv(void);
     int sendCtrl(char request,unsigned char *buffer,int len);
     void ctrlCamStart();
     void ctrlCamStop();
+    void ctrlIMUStart();
+    void ctrlIMUStop();
 signals:
     void recvSignals(unsigned char *buf,int len);
     void disconnectSignals(void);
+    void imuSignals(unsigned char *imu_data);
     
 };
 

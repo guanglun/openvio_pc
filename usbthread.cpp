@@ -7,9 +7,10 @@ USBThread::USBThread()
     is_loop = true;
 }
 
-void USBThread::init(WinUSBDriver *qwindriver)
+void USBThread::init(WinUSBDriver *qwindriver,int which)
 {
     this->qwindriver = qwindriver;
+    this->which = which;
 }
 
 void USBThread::run()
@@ -18,7 +19,12 @@ void USBThread::run()
     DBG("usb thread start");
     //while(is_loop)
     {
-        qwindriver->recv();
+        if(which == 0)
+        {
+            qwindriver->CamRecv();
+        }else{
+            qwindriver->IMURecv();
+        }
         //DBG("thread");
         //libusb_handle_events(NULL);
         //msleep(1);
