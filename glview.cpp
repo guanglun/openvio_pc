@@ -33,7 +33,7 @@ void GLView::initializeGL()
     glDepthFunc( GL_LEQUAL );
     glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
     
-    cameraInit(0,0,4.0f);
+    cameraInit(10,30,4.0f);
 }
 
 void GLView::updateGL()
@@ -65,10 +65,14 @@ void GLView::paintGL()
     GLDrow::DrowCube();
     
     glPopMatrix();
-
-    GLDrow::DrowGrid();
     
-
+    
+    glPushMatrix();
+    glTranslatef(0.0,0.0,-0.8);//下移
+    GLDrow::DrowGrid();
+    glPopMatrix();
+    
+    
     QMetaObject::invokeMethod(this,"update",Qt::QueuedConnection); 
 
     
