@@ -5,6 +5,10 @@
 #include <QTimer>
 #include "winusbdriver.h"
 #include "ui_mainwindow.h"
+#include "imu.h"
+
+#include "glview.h"
+#include "setting.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,6 +24,9 @@ public:
     
 private:
     
+    
+    GLView *glview;
+    IMU *imu;
     WinUSBDriver winusb;
     WinUSBDriver *qwindriver;
     QTimer *timer;
@@ -37,6 +44,7 @@ private slots:
     void on_pb_imu_start_clicked();
     void on_pb_imu_stop_clicked();
     void imuSlot(unsigned char *imu_data);
+    void on_pb_imu_calibration_clicked();
 };
 
 #endif // MAINWINDOW_H

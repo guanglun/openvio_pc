@@ -15,11 +15,11 @@ private:
     
     WinUSBDriver *qwindriver;
     bool is_loop;
-    int which;
+    QString buikName;
     
 public:
     USBThread();
-    void init(WinUSBDriver *qwindriver,int num);
+    void init(WinUSBDriver *qwindriver,QString buikName);
     void run();
     void waitClose();
     

@@ -10,21 +10,23 @@ WinUSBDriver::WinUSBDriver()
     camThread = new USBThread();
     imuThread = new USBThread();
     
-    camThread->init(this,0);
-    imuThread->init(this,1);
+    camThread->init(this,"cam");
+    imuThread->init(this,"imu");
     
-    libusb_init(&m_libusb_context);
+    
     
     ctrl_buffer = (unsigned char *)malloc(1024);
     imu_buffer  = (unsigned char *)malloc(14);
+    
+    connect(this,SIGNAL(closeSignals()),this,SLOT(closeSlot()));
 }
 
 WinUSBDriver::~WinUSBDriver()
 {
-    if(m_libusb_context){
-        libusb_exit(m_libusb_context);
-        m_libusb_context = NULL;
-    }
+//    if(m_libusb_context){
+//        libusb_exit(m_libusb_context);
+//        m_libusb_context = NULL;
+//    }
     
     free(ctrl_buffer);
     free(imu_buffer);
@@ -33,29 +35,39 @@ WinUSBDriver::~WinUSBDriver()
 int WinUSBDriver::open(int vid,int pid)
 {
     
-    int error = 0,i = 0;
     dev_handle = NULL;
+    
+    ret = libusb_init(&m_libusb_context);
+    if(ret < 0){
+        DBG("libusb init fail %d",ret);
+        goto init_fail;
+    }else{
+        DBG("libusb init success");
+    }
     
     dev_handle = libusb_open_device_with_vid_pid(m_libusb_context, vid, pid);
     if (dev_handle == NULL) {
-        DBG("fail to open usb device");
+        DBG("device open fail %d",ret);
         goto open_fail;
     }
     else {
-        DBG("Device Opened\n");
+        DBG("device open success");
     }
     
-    if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
-		DBG("Kernel Driver Active\n");
-		if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
-			DBG("Kernel Driver Detached!\n");
-		}
-	}
+//    if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
+//		DBG("Kernel Driver Active\n");
+//		if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
+//			DBG("Kernel Driver Detached!\n");
+//		}
+//	}
     
     
     ret = libusb_claim_interface(dev_handle,0);
     if(ret < 0){
-        DBG("Fail to libusb_claim_interface");
+        DBG("claim interface fail %d",ret);
+        goto claim_fail;
+    }else{
+        DBG("claim interface success");
     }
 
     is_open = true;
@@ -65,53 +77,62 @@ int WinUSBDriver::open(int vid,int pid)
     return 0;
     
     
-    fail:    
+    claim_fail:    
+    libusb_close(dev_handle);
     open_fail:
-    init_fail:
     libusb_exit(m_libusb_context);
+    init_fail:
     return 1;
 }
 
 void WinUSBDriver::CamRecv(void)
 {
-    recv_index = 0;
+    DBG("cam recv start");
+    //recv_index = 0;
     while(is_open)
     {
-        //DBG("imu start recv");
-        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,0);
+
+        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,1000);
         if(ret < 0)
         {
-            DBG("cam recv error");
-            emit disconnectSignals();
-            break;
+            if(ret != -7)
+            {
+                DBG("cam recv error %d",ret);
+                emit disconnectSignals();
+                break;
+            }
+
     
         }else{
             recv_index += camRecvLen;
             recv_count_1s += camRecvLen;
             if(recv_index >= RECV_LEN)
             {
-                //DBG("recv frame ");
                 frame_fps++;
                 recv_index = 0;
                 emit recvSignals(recv_buf_tmp,camRecvLen);
             }
         }
     }
+    DBG("cam recv exit");
 }
 
 void WinUSBDriver::IMURecv(void)
 {
-    
-
+    DBG("imu recv start");
     while(is_open)
     {
-        //DBG("imu start recv");
-        ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), 14 ,&imuRecvLen,0);
+
+        ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), 14 ,&imuRecvLen,1000);
         if(ret < 0)
         {
-            DBG("imu recv error");
-            emit disconnectSignals();
-            break;
+            
+            if(ret != -7)
+            {
+                DBG("imu recv error %d",ret);
+                emit disconnectSignals();
+                break;
+            }
     
         }else{
             recv_count_1s += imuRecvLen;
@@ -119,6 +140,7 @@ void WinUSBDriver::IMURecv(void)
             emit imuSignals(imu_buffer);
         }
     }
+    DBG("imu recv exit");
 }
 
 void WinUSBDriver::send(QByteArray byte)
@@ -132,17 +154,33 @@ void WinUSBDriver::send(QByteArray byte)
 
 int WinUSBDriver::close(void)
 {
-    is_open = false;
+    emit closeSignals();
+}
+
+void WinUSBDriver::closeSlot(void)
+{
+    if(is_open)
+    {
+        is_open = false;
+        
+        DBG("closeSlot");
+        
+        libusb_release_interface(dev_handle, 0);
+        
+        //libusb_close(dev_handle);
+        
+        camThread->waitClose();
+        DBG("camThread->waitClose()");
+        
+        imuThread->waitClose();
+        DBG("imuThread->waitClose()");
+        
+        //libusb_release_interface(dev_handle, 0);
     
-    camThread->waitClose();
-    imuThread->waitClose();
-
-    libusb_release_interface(dev_handle, 0);
-
-    libusb_close(dev_handle);
-
-    DBG("usb close");
-    
+        libusb_close(dev_handle);
+        libusb_exit(m_libusb_context);
+        DBG("usb close");
+    }    
 }
 
 #define REQUEST_CAMERA_START    0xA0

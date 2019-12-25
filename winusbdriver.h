@@ -56,11 +56,15 @@ public:
     void ctrlCamStop();
     void ctrlIMUStart();
     void ctrlIMUStop();
+    
 signals:
     void recvSignals(unsigned char *buf,int len);
     void disconnectSignals(void);
     void imuSignals(unsigned char *imu_data);
+    void closeSignals(void);
     
+private slots:
+    void closeSlot(void);
 };
 
 #endif // WINUSBDRIVER_H

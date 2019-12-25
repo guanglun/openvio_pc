@@ -1,13 +1,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "glview.h"
+Setting *setting;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    
+    setting = new Setting();
+    
+    glview = new GLView(this);
+    ui->verticalLayout->addWidget(glview,0,0);
     
     this->setWindowTitle("OPENVIO上位机");
     
@@ -19,14 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeOut()));
     timer->start(1000);
     
-    //imuStatusLabel = new QLabel("imuStatus");
-    //ui->statusBar->addPermanentWidget(imuStatusLabel);
-    
-    GLView *glview = new GLView(this);
-    
-    ui->verticalLayout->addWidget(glview,0,0);
-    
-    
+
+    imu = new IMU();
 }
 
 MainWindow::~MainWindow()
@@ -37,6 +36,7 @@ MainWindow::~MainWindow()
 void MainWindow::usbRecvSlot(unsigned char *buf,int len)
 {
     QImage myImage = QImage(winusb.img.img,winusb.img.width,winusb.img.high,QImage::Format_Grayscale8);
+    
     ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
 }
 
@@ -65,7 +65,11 @@ void MainWindow::disconnectSlot(void)
 void MainWindow::imuSlot(unsigned char *imu_data)
 {
     static short acc[3],gyro[3],temp;
+    static T_float_angle Att_Angle;
     
+    imu->recvData(imu_data,&Att_Angle);
+    glview->setAngle(Att_Angle.rol,Att_Angle.pit,Att_Angle.yaw);
+            
     acc[0] = (short)((imu_data[0]<<8)|imu_data[1]);
     acc[1] = (short)((imu_data[2]<<8)|imu_data[3]);
     acc[2] = (short)((imu_data[4]<<8)|imu_data[5]);
@@ -83,6 +87,10 @@ void MainWindow::imuSlot(unsigned char *imu_data)
     ui->lb_gyr_x->setText(QString::number(gyro[0]));
     ui->lb_gyr_y->setText(QString::number(gyro[1]));
     ui->lb_gyr_z->setText(QString::number(gyro[2]));
+
+    ui->lb_att_rol->setText(QString::number(Att_Angle.rol,10,4));
+    ui->lb_att_pit->setText(QString::number(Att_Angle.pit,10,4));
+    ui->lb_att_yaw->setText(QString::number(Att_Angle.yaw,10,4));
     
     ui->lb_temp->setText(QString::number(temp));
     
@@ -143,4 +151,9 @@ void MainWindow::on_pb_imu_start_clicked()
 void MainWindow::on_pb_imu_stop_clicked()
 {
     winusb.ctrlIMUStop();
+}
+
+void MainWindow::on_pb_imu_calibration_clicked()
+{
+    imu->startCalibration();
 }

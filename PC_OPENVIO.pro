@@ -8,7 +8,7 @@ QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = WINSUB_PC_Test
+TARGET = PC_OPENVIO
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -31,7 +31,10 @@ SOURCES += \
     usbthread.cpp \
     easytool.cpp \
     image.cpp \
-    glview.cpp
+    glview.cpp \
+    gldrow.cpp \
+    imu.cpp \
+    setting.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -41,7 +44,10 @@ HEADERS += \
     workspace.h \
     easytool.h \
     image.h \
-    glview.h
+    glview.h \
+    gldrow.h \
+    imu.h \
+    setting.h
 
 FORMS += \
         mainwindow.ui
@@ -53,3 +59,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 win32: LIBS += "F:\10.qt_workspace\PC_OPENVIO\lib\libusb-1.0.a"
 win32: LIBS+=-lopengl32 -lglu32
+
+INCLUDEPATH += F:\10.qt_workspace\PC_OPENVIO\eigen-3.2.10

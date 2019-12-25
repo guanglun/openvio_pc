@@ -2,40 +2,40 @@
 
 USBThread::USBThread()
 {
-
-    
     is_loop = true;
 }
 
-void USBThread::init(WinUSBDriver *qwindriver,int which)
+void USBThread::init(WinUSBDriver *qwindriver,QString buikName)
 {
     this->qwindriver = qwindriver;
-    this->which = which;
+    this->buikName = buikName;
 }
 
 void USBThread::run()
 {
     is_loop = true;
-    DBG("usb thread start");
-    //while(is_loop)
+    qDebug() << buikName << " usb thread start";
+    
+    if(!buikName.compare(QString::fromUtf8("cam")))
     {
-        if(which == 0)
-        {
-            qwindriver->CamRecv();
-        }else{
-            qwindriver->IMURecv();
-        }
-        //DBG("thread");
-        //libusb_handle_events(NULL);
-        //msleep(1);
+        qwindriver->CamRecv();
+        DBG("qwindriver->CamRecv();");
+    }else if(!buikName.compare(QString::fromUtf8("imu"))){
+        qwindriver->IMURecv();
+        DBG("qwindriver->IMURecv();");
     }
-    DBG("usb thread exit");
+
+    
+    qDebug() << buikName << " usb thread exit";
     is_loop = false;
 }
 
 void USBThread::waitClose()
 {
-    while(is_loop);
+    while(is_loop)
+    {
+        msleep(10);
+    }
 }
 
 
