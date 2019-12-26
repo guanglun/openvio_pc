@@ -22,7 +22,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++11 -static
+CONFIG += c++11
 
 SOURCES += \
         main.cpp \
@@ -59,9 +59,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 
 win32{
-    win32: LIBS += "F:\10.qt_workspace\PC_OPENVIO\lib\libusb-1.0.a"
-    win32: LIBS+=-lopengl32 -lglu32
-    INCLUDEPATH += F:\10.qt_workspace\PC_OPENVIO\eigen-3.2.10
+	LIBS +=		-lopengl32 \
+				-lglu32
+
+    LIBS += "$$PWD/lib/libusb-1.0.a"
+    
+    INCLUDEPATH += ./eigen-3.2.10
 }
 
 unix{
