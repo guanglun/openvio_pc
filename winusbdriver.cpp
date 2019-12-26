@@ -18,6 +18,7 @@ WinUSBDriver::WinUSBDriver()
     ctrl_buffer = (unsigned char *)malloc(1024);
     imu_buffer  = (unsigned char *)malloc(14);
     
+    camStatus = SENSOR_STATUS_WAIT_HEAD;
     connect(this,SIGNAL(closeSignals()),this,SLOT(closeSlot()));
 }
 
@@ -91,6 +92,10 @@ void WinUSBDriver::CamRecv(void)
     //recv_index = 0;
     while(is_open)
     {
+//        if(camStatus == SENSOR_STATUS_WAIT_HEAD)
+//        {
+//            recv_index = 0;
+//        }
 
         ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,1000);
         if(ret < 0)
@@ -104,14 +109,27 @@ void WinUSBDriver::CamRecv(void)
 
     
         }else{
-            recv_index += camRecvLen;
             recv_count_1s += camRecvLen;
-            if(recv_index >= RECV_LEN)
-            {
-                frame_fps++;
-                recv_index = 0;
-                emit recvSignals(recv_buf_tmp,camRecvLen);
-            }
+
+//            if(camStatus == SENSOR_STATUS_WAIT_HEAD)
+//            {
+//                if(img.img[0] == 0x12 &&
+//                   img.img[1] == 0x34 &&
+//                   img.img[2] == 0x56 &&
+//                   img.img[3] == 0x78)
+//                {
+//                    camStatus = SENSOR_STATUS_RUNNING;
+//                }
+//            }else if(camStatus == SENSOR_STATUS_RUNNING)
+//            {
+                recv_index += camRecvLen;
+                if(recv_index >= RECV_LEN)
+                {
+                    frame_fps++;
+                    recv_index = 0;
+                    emit recvSignals(recv_buf_tmp,camRecvLen);
+                }
+//            }
         }
     }
     DBG("cam recv exit");
@@ -220,12 +238,18 @@ int WinUSBDriver::sendCtrl(char request,unsigned char *buffer,int len)
 void WinUSBDriver::ctrlCamStart()
 {
     recv_index = 0;
-    sendCtrl(REQUEST_CAMERA_START,NULL,0);
+    if(sendCtrl(REQUEST_CAMERA_START,NULL,0) == 0)
+    {
+        camStatus = SENSOR_STATUS_WAIT_HEAD;
+    }
 }
 
 void WinUSBDriver::ctrlCamStop()
 {
-    sendCtrl(REQUEST_CAMERA_STOP,NULL,0);
+    if(sendCtrl(REQUEST_CAMERA_STOP,NULL,0) == 0)
+    {
+        camStatus = SENSOR_STATUS_STOP;
+    }
 }
 
 void WinUSBDriver::ctrlIMUStart()

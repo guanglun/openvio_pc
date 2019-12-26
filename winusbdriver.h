@@ -15,6 +15,11 @@ class USBThread;
 
 #define RECV_LEN    (640*480)
 
+enum SENSOR_STATUS{
+    SENSOR_STATUS_STOP,
+    SENSOR_STATUS_WAIT_HEAD,
+    SENSOR_STATUS_RUNNING
+};
 
 class WinUSBDriver : public QObject
 {
@@ -37,6 +42,8 @@ private:
     
     USBThread *camThread,*imuThread;
     libusb_context* m_libusb_context;
+
+    enum SENSOR_STATUS camStatus;
     
 public:
     Image img;
