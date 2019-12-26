@@ -43,7 +43,7 @@ private:
     USBThread *camThread,*imuThread;
     libusb_context* m_libusb_context;
 
-    enum SENSOR_STATUS camStatus;
+    enum SENSOR_STATUS camStatus,imuStatus;
     
 public:
     Image img;

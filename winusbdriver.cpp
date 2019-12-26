@@ -1,3 +1,4 @@
+#include <QThread>
 #include "winusbdriver.h"
 #define CTRL_EPADDR         0x01    
 #define CAM_EPADDR          0x81           
@@ -18,16 +19,18 @@ WinUSBDriver::WinUSBDriver()
     ctrl_buffer = (unsigned char *)malloc(1024);
     imu_buffer  = (unsigned char *)malloc(14);
     
-    camStatus = SENSOR_STATUS_WAIT_HEAD;
+    camStatus = SENSOR_STATUS_STOP;
+    imuStatus = SENSOR_STATUS_STOP;
+
     connect(this,SIGNAL(closeSignals()),this,SLOT(closeSlot()));
 }
 
 WinUSBDriver::~WinUSBDriver()
 {
-//    if(m_libusb_context){
-//        libusb_exit(m_libusb_context);
-//        m_libusb_context = NULL;
-//    }
+    //    if(m_libusb_context){
+    //        libusb_exit(m_libusb_context);
+    //        m_libusb_context = NULL;
+    //    }
     
     free(ctrl_buffer);
     free(imu_buffer);
@@ -55,12 +58,12 @@ int WinUSBDriver::open(int vid,int pid)
         DBG("device open success");
     }
     
-//    if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
-//		DBG("Kernel Driver Active\n");
-//		if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
-//			DBG("Kernel Driver Detached!\n");
-//		}
-//	}
+    //    if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
+    //		DBG("Kernel Driver Active\n");
+    //		if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
+    //			DBG("Kernel Driver Detached!\n");
+    //		}
+    //	}
     
     
     ret = libusb_claim_interface(dev_handle,0);
@@ -78,11 +81,11 @@ int WinUSBDriver::open(int vid,int pid)
     return 0;
     
     
-    claim_fail:    
+claim_fail:
     libusb_close(dev_handle);
-    open_fail:
+open_fail:
     libusb_exit(m_libusb_context);
-    init_fail:
+init_fail:
     return 1;
 }
 
@@ -92,9 +95,9 @@ void WinUSBDriver::CamRecv(void)
     //recv_index = 0;
     while(is_open)
     {
-//        if(camStatus == SENSOR_STATUS_WAIT_HEAD)
+//        while(camStatus == SENSOR_STATUS_STOP)
 //        {
-//            recv_index = 0;
+//            QThread::msleep(10);
 //        }
 
         ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,1000);
@@ -107,29 +110,16 @@ void WinUSBDriver::CamRecv(void)
                 break;
             }
 
-    
+
         }else{
             recv_count_1s += camRecvLen;
-
-//            if(camStatus == SENSOR_STATUS_WAIT_HEAD)
-//            {
-//                if(img.img[0] == 0x12 &&
-//                   img.img[1] == 0x34 &&
-//                   img.img[2] == 0x56 &&
-//                   img.img[3] == 0x78)
-//                {
-//                    camStatus = SENSOR_STATUS_RUNNING;
-//                }
-//            }else if(camStatus == SENSOR_STATUS_RUNNING)
-//            {
-                recv_index += camRecvLen;
-                if(recv_index >= RECV_LEN)
-                {
-                    frame_fps++;
-                    recv_index = 0;
-                    emit recvSignals(recv_buf_tmp,camRecvLen);
-                }
-//            }
+            recv_index += camRecvLen;
+            if(recv_index >= RECV_LEN)
+            {
+                frame_fps++;
+                recv_index = 0;
+                emit recvSignals(recv_buf_tmp,camRecvLen);
+            }
         }
     }
     DBG("cam recv exit");
@@ -141,6 +131,11 @@ void WinUSBDriver::IMURecv(void)
     while(is_open)
     {
 
+//        while(imuStatus == SENSOR_STATUS_STOP)
+//        {
+//            QThread::msleep(10);
+//        }
+
         ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), 14 ,&imuRecvLen,1000);
         if(ret < 0)
         {
@@ -151,7 +146,7 @@ void WinUSBDriver::IMURecv(void)
                 emit disconnectSignals();
                 break;
             }
-    
+
         }else{
             recv_count_1s += imuRecvLen;
             imu_hz++;
@@ -194,11 +189,11 @@ void WinUSBDriver::closeSlot(void)
         DBG("imuThread->waitClose()");
         
         //libusb_release_interface(dev_handle, 0);
-    
+
         libusb_close(dev_handle);
         libusb_exit(m_libusb_context);
         DBG("usb close");
-    }    
+    }
 }
 
 #define REQUEST_CAMERA_START    0xA0
@@ -219,18 +214,18 @@ int WinUSBDriver::sendCtrl(char request,unsigned char *buffer,int len)
             ret = libusb_control_transfer(dev_handle,LIBUSB_REQUEST_TYPE_VENDOR + LIBUSB_ENDPOINT_IN
                                           ,request,0,0,buffer,len,1000);
         }
-            if(ret < 0)
+        if(ret < 0)
+        {
+            DBG("libusb_control_transfer fail");
+            return 1;
+        }else{
+            if(ctrl_buffer[0] == 'S')
             {
-                DBG("libusb_control_transfer fail");
-                return 1;
-            }else{
-                if(ctrl_buffer[0] == 'S')
-                {
-                    DBG("libusb_control_transfer success %c",ctrl_buffer[0]);
-                    return 0;
-                }
+                DBG("libusb_control_transfer success %c",ctrl_buffer[0]);
+                return 0;
             }
-      
+        }
+
 
     }
 }
@@ -240,7 +235,7 @@ void WinUSBDriver::ctrlCamStart()
     recv_index = 0;
     if(sendCtrl(REQUEST_CAMERA_START,NULL,0) == 0)
     {
-        camStatus = SENSOR_STATUS_WAIT_HEAD;
+        camStatus = SENSOR_STATUS_RUNNING;
     }
 }
 
@@ -254,12 +249,18 @@ void WinUSBDriver::ctrlCamStop()
 
 void WinUSBDriver::ctrlIMUStart()
 {
-    sendCtrl(REQUEST_IMU_START,NULL,0);
+    if(sendCtrl(REQUEST_IMU_START,NULL,0) == 0)
+    {
+        imuStatus = SENSOR_STATUS_RUNNING;
+    }
 }
 
 void WinUSBDriver::ctrlIMUStop()
 {
-    sendCtrl(REQUEST_IMU_STOP,NULL,0);
+    if(sendCtrl(REQUEST_IMU_STOP,NULL,0) == 0)
+    {
+        imuStatus = SENSOR_STATUS_STOP;
+    }
 }
 
 
