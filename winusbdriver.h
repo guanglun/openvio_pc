@@ -13,7 +13,7 @@ class USBThread;
 #define CANDLE_MAX_DEVICES 32
 
 
-#define RECV_LEN    (640*480)
+#define RECV_LEN    (752*480)
 
 enum SENSOR_STATUS{
     SENSOR_STATUS_STOP,

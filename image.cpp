@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define IMG_WIDTH   640
+#define IMG_WIDTH   752
 #define IMG_HIGH    480
 #define IMG_SIZE
 

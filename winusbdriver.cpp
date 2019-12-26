@@ -1,5 +1,6 @@
 #include <QThread>
 #include "winusbdriver.h"
+
 #define CTRL_EPADDR         0x01    
 #define CAM_EPADDR          0x81           
 #define IMU_EPADDR          0x82         
@@ -95,10 +96,10 @@ void WinUSBDriver::CamRecv(void)
     //recv_index = 0;
     while(is_open)
     {
-//        while(camStatus == SENSOR_STATUS_STOP)
-//        {
-//            QThread::msleep(10);
-//        }
+        while(camStatus == SENSOR_STATUS_STOP)
+        {
+            QThread::msleep(10);
+        }
 
         ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,1000);
         if(ret < 0)
@@ -131,10 +132,10 @@ void WinUSBDriver::IMURecv(void)
     while(is_open)
     {
 
-//        while(imuStatus == SENSOR_STATUS_STOP)
-//        {
-//            QThread::msleep(10);
-//        }
+        while(imuStatus == SENSOR_STATUS_STOP)
+        {
+            QThread::msleep(10);
+        }
 
         ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), 14 ,&imuRecvLen,1000);
         if(ret < 0)
@@ -219,15 +220,18 @@ int WinUSBDriver::sendCtrl(char request,unsigned char *buffer,int len)
             DBG("libusb_control_transfer fail");
             return 1;
         }else{
+            DBG("libusb_control_transfer success %c",ctrl_buffer[0]);
+
             if(ctrl_buffer[0] == 'S')
             {
-                DBG("libusb_control_transfer success %c",ctrl_buffer[0]);
                 return 0;
             }
         }
 
 
     }
+
+    return 1;
 }
 
 void WinUSBDriver::ctrlCamStart()
