@@ -7,8 +7,17 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
+
+#ifdef __linux__
+#include <GL/glut.h>
+#elif _WIN32
 #include <windows.h>
 #include <glut.h>
+#else
+
+#endif
+
+
 
 #include<QMouseEvent>
 #include<QWheelEvent>

@@ -2,7 +2,7 @@
 #define GLDROW_H
 
 #include <QOpenGLWidget>
-#include <glut.h>
+#include "glview.h"
 
 class GLDrow
 {

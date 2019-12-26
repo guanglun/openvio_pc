@@ -52,7 +52,7 @@ void GLView::paintGL()
                center[0],   center[1],  center[2], 
                up[0],       up[1],      up[2]);  
     
-    
+
     glPushMatrix();
 
     

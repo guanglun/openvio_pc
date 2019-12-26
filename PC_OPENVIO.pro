@@ -57,7 +57,21 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-win32: LIBS += "F:\10.qt_workspace\PC_OPENVIO\lib\libusb-1.0.a"
-win32: LIBS+=-lopengl32 -lglu32
 
-INCLUDEPATH += F:\10.qt_workspace\PC_OPENVIO\eigen-3.2.10
+win32{
+    win32: LIBS += "F:\10.qt_workspace\PC_OPENVIO\lib\libusb-1.0.a"
+    win32: LIBS+=-lopengl32 -lglu32
+    INCLUDEPATH += F:\10.qt_workspace\PC_OPENVIO\eigen-3.2.10
+}
+
+unix{
+    LIBS +=     -lusb-1.0 \
+                -lglut \
+                -lGL \
+                -lGLU
+
+    INCLUDEPATH += ./eigen-3.2.10
+}
+
+
+
