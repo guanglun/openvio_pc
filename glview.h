@@ -12,7 +12,7 @@
 #include <GL/glut.h>
 #elif _WIN32
 #include <windows.h>
-#include <glut.h>
+#include <glut/glut.h>
 #else
 
 #endif

@@ -42,7 +42,7 @@ private:
     void calibration(T_int16_xyz *acc,T_int16_xyz *gyro);
     void prepareData(T_int16_xyz *acc_in,T_int16_xyz *acc_out);
     void update(T_int16_xyz *gyr, T_int16_xyz *acc, T_float_angle *angle);
-    
+    void acc_calibration(T_int16_xyz *acc);
 public:
     IMU();
     void startCalibration(void);
