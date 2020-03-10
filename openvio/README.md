@@ -2,8 +2,7 @@
 
 #### 介绍
 OPENVIO控制上位机。  
-![OPENVIO上位机](https://gitee.com/guanglunking/OPENVIO_PC/blob/master/2020-03-10.png)
-
+![OPENVIO上位机](https://images.gitee.com/uploads/images/2020/0310/120626_ecb2ca4d_683968.png "Screenshot from 2020-03-10 11-04-51.png")
 #### 功能
 * 摄像头数据显示与设置
 * IMU数据显示与设置
