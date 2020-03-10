@@ -2,7 +2,7 @@
 
 #### 介绍
 OPENVIO控制上位机。  
-![OPENVIO上位机](https://gitee.com/guanglunking/OPENVIO_PC/blob/master/Screenshot%20from%202020-03-10%2011-04-51.png "OPENVIO上位机")
+![OPENVIO上位机](https://gitee.com/guanglunking/OPENVIO_PC/blob/master/2020-03-10.png "OPENVIO上位机")
 
 #### 功能
 * 摄像头数据显示与设置
