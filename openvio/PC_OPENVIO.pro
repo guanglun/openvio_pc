@@ -34,7 +34,8 @@ SOURCES += \
     glview.cpp \
     gldrow.cpp \
     imu.cpp \
-    setting.cpp
+    setting.cpp \
+    findstr.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -47,7 +48,8 @@ HEADERS += \
     glview.h \
     gldrow.h \
     imu.h \
-    setting.h
+    setting.h \
+    findstr.h
 
 FORMS += \
         mainwindow.ui

@@ -6,7 +6,7 @@
 #include "libusb.h"
 #include "workspace.h"
 #include "image.h"
-
+#include "findstr.h"
 class USBThread;
 #include "usbthread.h"
 

@@ -93,33 +93,90 @@ init_fail:
 void WinUSBDriver::CamRecv(void)
 {
     DBG("cam recv start");
-    //recv_index = 0;
+    unsigned char recv_temp[5];
+    
+    int recv_head_status = 0;
+    int findRet = 0;
+    FindStr findStr;
+    findStr.config((unsigned char *)"CAM",3);
     while(is_open)
     {
-        while(camStatus == SENSOR_STATUS_STOP)
+//        if(camStatus == SENSOR_STATUS_STOP)
+//        {
+//            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img), RECV_LEN ,&camRecvLen,1000);
+//            if(ret < 0)
+//            {
+//                if(ret != -7)
+//                {
+//                    DBG("cam recv error %d",ret);
+//                    emit disconnectSignals();
+//                    break;
+//                }
+//            }else{
+                
+//            }
+            
+//            findStr.reset();
+//        }else 
+//            if(camStatus == SENSOR_STATUS_WAIT_HEAD || camStatus == SENSOR_STATUS_STOP)
+//        {
+//            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img), RECV_LEN ,&camRecvLen,1000);
+//            if(ret < 0)
+//            {
+//                if(ret != -7)
+//                {
+//                    DBG("cam recv error %d",ret);
+//                    emit disconnectSignals();
+//                    break;
+//                }
+//            }else{
+//                findRet = findStr.input(img.img,camRecvLen);
+//                if(findRet > 0)
+//                {
+                           
+//                    DBG("cam start %d %d",camRecvLen,findRet);
+//                    camStatus = SENSOR_STATUS_RUNNING;
+//                    recv_index = 0;
+//                }else{
+////                    if(camRecvLen<1000)
+//                    DBG("cam start %d %d",camRecvLen,findRet);
+//                }
+//            }
+//        }else if(camStatus == SENSOR_STATUS_RUNNING)
         {
-            QThread::msleep(10);
-        }
-
-        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,1000);
-        if(ret < 0)
-        {
-            if(ret != -7)
+            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img+recv_index), RECV_LEN ,&camRecvLen,1000);
+            if(ret < 0)
             {
-                DBG("cam recv error %d",ret);
-                emit disconnectSignals();
-                break;
-            }
+                if(ret != -7)
+                {
+                    DBG("cam recv error %d",ret);
+                    emit disconnectSignals();
+                    break;
+                }
+    
+    
+            }else{
+                recv_count_1s += camRecvLen;
+                
+                
+                if(recv_head_status == 0 && recv_index == 0)
+                {
+                    findRet = findStr.input(img.img,camRecvLen);
+                    if(findRet > 0)
+                    {
+                        recv_head_status = 1;
+                    }
+                }else{
+                    recv_index += camRecvLen;
+                    if(recv_index >= RECV_LEN)
+                    {
+                        frame_fps++;
+                        recv_index = 0;
+                        recv_head_status = 0;
+                        emit recvSignals(recv_buf_tmp,camRecvLen);
+                    }
+                }
 
-
-        }else{
-            recv_count_1s += camRecvLen;
-            recv_index += camRecvLen;
-            if(recv_index >= RECV_LEN)
-            {
-                frame_fps++;
-                recv_index = 0;
-                emit recvSignals(recv_buf_tmp,camRecvLen);
             }
         }
     }
@@ -239,7 +296,8 @@ void WinUSBDriver::ctrlCamStart()
     recv_index = 0;
     if(sendCtrl(REQUEST_CAMERA_START,NULL,0) == 0)
     {
-        camStatus = SENSOR_STATUS_RUNNING;
+        camStatus = SENSOR_STATUS_WAIT_HEAD;
+        recv_index = 0;
     }
 }
 

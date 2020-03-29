@@ -30,30 +30,6 @@ void IMU::startCalibration(void)
     isAccCalStart = true;
 }
 
-#define OX -0.0273
-#define OY -0.2073
-#define OZ 0.1292
-#define RX 1.0002
-#define RY 1.0017
-#define RZ 1.0133
-
-void IMU::acc_calibration(T_int16_xyz *acc)
-{
-    T_int16_xyz acc_tmp;
-    float acc_cal = 9.8f*8.0f/65535*2;
-    acc_tmp.X = acc->X*acc_cal;
-    acc_tmp.Y = acc->Y*acc_cal;
-    acc_tmp.Z = acc->Z*acc_cal;
-
-    acc->X =  1.0019*acc_tmp.X-0.0134*acc_tmp.Y+0.0212*acc_tmp.Z;
-    acc->Y =  0.0569*acc_tmp.X+1.0190*acc_tmp.Y+0.0180*acc_tmp.Z;
-    acc->Z = -0.0263*acc_tmp.X-0.0086*acc_tmp.Y+0.9741*acc_tmp.Z;
-
-    acc->X = acc->X/acc_cal;
-    acc->Y = acc->Y/acc_cal;
-    acc->Z = acc->Z/acc_cal;
-}
-
 void IMU::calibration(T_int16_xyz *acc,T_int16_xyz *gyro)
 {
     static T_int32_xyz tempg = {0,0,0},tempa = {0,0,0};
@@ -131,19 +107,18 @@ void IMU::calibration(T_int16_xyz *acc,T_int16_xyz *gyro)
 
 void IMU::recvData(unsigned char *imu_data,T_float_angle *angle)
 {
-    Acc.X = (short)((imu_data[0]<<8)|imu_data[1]); //- ACC_OFFSET.X;
-    Acc.Y = (short)((imu_data[2]<<8)|imu_data[3]); //- ACC_OFFSET.Y;
-    Acc.Z = (short)((imu_data[4]<<8)|imu_data[5]); //- ACC_OFFSET.Z;
+    Acc.X = (short)((imu_data[0]<<8)|imu_data[1]) - ACC_OFFSET.X;
+    Acc.Y = (short)((imu_data[2]<<8)|imu_data[3]) - ACC_OFFSET.Y;
+    Acc.Z = (short)((imu_data[4]<<8)|imu_data[5]) - ACC_OFFSET.Z;
     
     //temp = (short)((imu_data[6]<<8)|imu_data[7]);
     
-    Gyr.X = (short)((imu_data[6]<<8)|imu_data[7])   - GYRO_OFFSET.X;
-    Gyr.Y = (short)((imu_data[8]<<8)|imu_data[9]) - GYRO_OFFSET.Y;
-    Gyr.Z = (short)((imu_data[10]<<8)|imu_data[11]) - GYRO_OFFSET.Z;
+    Gyr.X = (short)((imu_data[8]<<8)|imu_data[9])   - GYRO_OFFSET.X;
+    Gyr.Y = (short)((imu_data[10]<<8)|imu_data[11]) - GYRO_OFFSET.Y;
+    Gyr.Z = (short)((imu_data[12]<<8)|imu_data[13]) - GYRO_OFFSET.Z;
     
     calibration(&Acc,&Gyr);
     prepareData(&Acc,&Acc_AVG);
-    acc_calibration(&Acc);
     update(&Gyr,&Acc_AVG,angle);
     
 }

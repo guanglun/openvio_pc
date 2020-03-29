@@ -76,9 +76,9 @@ void MainWindow::imuSlot(unsigned char *imu_data)
     
     temp = (short)((imu_data[6]<<8)|imu_data[7]);
     
-    gyro[0] = (short)((imu_data[6]<<8)|imu_data[7]);
-    gyro[1] = (short)((imu_data[8]<<8)|imu_data[9]);
-    gyro[2] = (short)((imu_data[10]<<8)|imu_data[11]);
+    gyro[0] = (short)((imu_data[8]<<8)|imu_data[9]);
+    gyro[1] = (short)((imu_data[10]<<8)|imu_data[11]);
+    gyro[2] = (short)((imu_data[12]<<8)|imu_data[13]);
     
     ui->lb_acc_x->setText(QString::number(acc[0]));
     ui->lb_acc_y->setText(QString::number(acc[1]));
