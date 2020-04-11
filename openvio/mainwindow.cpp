@@ -1,7 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "log.h"
+#include "formcamconfig.h"
 
 Setting *setting;
+QLabel *status_msg,*status_speed;
+Log *mlog;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,16 +20,34 @@ MainWindow::MainWindow(QWidget *parent) :
     
     this->setWindowTitle("OPENVIO上位机");
     
-    connect(&winusb,SIGNAL(recvSignals(unsigned char *,int)),this,SLOT(usbRecvSlot(unsigned char *,int)));
-    connect(&winusb,SIGNAL(disconnectSignals()),this,SLOT(disconnectSlot()));
-    connect(&winusb,SIGNAL(imuSignals(unsigned char *)),this,SLOT(imuSlot(unsigned char *)));
+    qwinusb = new WinUSBDriver();
+    
+    connect(qwinusb,SIGNAL(sendStatusSignals(int)),this,SLOT(sendStatusSlot(int)));
+    connect(qwinusb,SIGNAL(recvSignals(unsigned char *,int)),this,SLOT(usbRecvSlot(unsigned char *,int)));
+    connect(qwinusb,SIGNAL(disconnectSignals()),this,SLOT(disconnectSlot()));
+    connect(qwinusb,SIGNAL(imuSignals(unsigned char *)),this,SLOT(imuSlot(unsigned char *)));
     
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeOut()));
     timer->start(1000);
     
-
     imu = new IMU();
+    
+    //状态栏
+    status_msg = new QLabel(this);
+    ui->statusBar->addWidget(status_msg);
+    status_msg->setText("OPENVIO");
+
+    status_msg->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    
+    status_speed = new QLabel(this);
+    ui->statusBar->addWidget(status_speed);
+    status_speed->setText("0");
+    
+    status_speed->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    
+    mlog = new Log();
+    mlog->show("OPENVIO已启动");
 }
 
 MainWindow::~MainWindow()
@@ -35,7 +57,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::usbRecvSlot(unsigned char *buf,int len)
 {
-    QImage myImage = QImage(winusb.img.img,winusb.img.width,winusb.img.high,QImage::Format_Grayscale8);
+    QImage myImage = QImage(qwinusb->img.img,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
     
     ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
 }
@@ -44,22 +66,42 @@ void MainWindow::on_pb_open_clicked()
 {
     if(ui->pb_open->text().compare(QString::fromUtf8("打开")) == 0)
     {
+        ui->pb_open->setEnabled(false);
+
         int vid = ui->le_vid->text().toInt();
         int pid = ui->le_pid->text().toInt();
-        if(winusb.open(vid,pid) == 0)
-        {
-            ui->pb_open->setText("关闭");
-        }
+        qwinusb->open(vid,pid);
     }else
     {
-        winusb.close();
-        ui->pb_open->setText("打开");
+        ui->pb_open->setEnabled(false);
+
+        qwinusb->close();
     }   
 }
 void MainWindow::disconnectSlot(void)
 {
-    winusb.close();
+    qwinusb->close();
     ui->pb_open->setText("打开");
+}
+
+void MainWindow::sendStatusSlot(int msg)
+{
+    switch(msg)
+    {
+    case USB_MSG_OPEN_SUCCESS:
+        ui->pb_open->setEnabled(true);
+
+        ui->pb_open->setText("关闭");        
+        break;
+    case USB_MSG_CLOSE_SUCCESS:
+    case USB_MSG_OPEN_FAIL:
+        ui->pb_open->setEnabled(true);
+
+        ui->pb_open->setText("打开");        
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::imuSlot(unsigned char *imu_data)
@@ -107,53 +149,60 @@ void MainWindow::on_pb_send_clicked()
 void MainWindow::onTimeOut()
 {
     QString str;
-    if(winusb.recv_count_1s < 1024)
+    if(qwinusb->recv_count_1s < 1024)
     {
-        str = QString::number(winusb.recv_count_1s);
+        str = QString::number(qwinusb->recv_count_1s);
         str += "B/s";
-    }else if(winusb.recv_count_1s < 1024*1024)
+    }else if(qwinusb->recv_count_1s < 1024*1024)
     {
-        str = QString::number(winusb.recv_count_1s/1024);
+        str = QString::number(qwinusb->recv_count_1s/1024);
         str += "KB/s";
-    }else if(winusb.recv_count_1s < 1024*1024*1024)
+    }else if(qwinusb->recv_count_1s < 1024*1024*1024)
     {
-        str = QString::number(winusb.recv_count_1s/1024/1024);
+        str = QString::number(qwinusb->recv_count_1s/1024/1024);
         str += "MB/s";
     }
     
     str += " ";
-    str += QString::number(winusb.frame_fps);
+    str += QString::number(qwinusb->frame_fps);
     str += "fps";
-    winusb.frame_fps = 0;
+    qwinusb->frame_fps = 0;
     
-    winusb.recv_count_1s = 0;
-    ui->statusBar->showMessage(str);
+    qwinusb->recv_count_1s = 0;
+    status_speed->setText(str);
     
-    ui->lb_imu_hz->setText(QString::number(winusb.imu_hz)+"Hz");
-    winusb.imu_hz = 0;
+    ui->lb_imu_hz->setText(QString::number(qwinusb->imu_hz)+"Hz");
+    qwinusb->imu_hz = 0;
 }
 
 void MainWindow::on_pb_cam_start_clicked()
 {
-    winusb.ctrlCamStart();
+    qwinusb->ctrlCamStart();
 }
 
 void MainWindow::on_pb_cam_stop_clicked()
 {
-    winusb.ctrlCamStop();
+    qwinusb->ctrlCamStop();
 }
 
 void MainWindow::on_pb_imu_start_clicked()
 {
-    winusb.ctrlIMUStart();
+    qwinusb->ctrlIMUStart();
 }
 
 void MainWindow::on_pb_imu_stop_clicked()
 {
-    winusb.ctrlIMUStop();
+    qwinusb->ctrlIMUStop();
 }
 
 void MainWindow::on_pb_imu_calibration_clicked()
 {
     imu->startCalibration();
+}
+
+void MainWindow::on_action_config_cam_triggered()
+{
+    FormCamConfig *formCamConfig = new FormCamConfig();
+    formCamConfig->setQData(qwinusb);
+    formCamConfig->show();
 }

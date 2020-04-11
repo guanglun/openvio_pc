@@ -2,19 +2,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define IMG_WIDTH   752
-#define IMG_HIGH    480
-#define IMG_SIZE
+const int resolution[][2] = {
+	{0, 0},
+	// C/SIF Resolutions
+	{88, 72},	/* QQCIF     */
+	{176, 144}, /* QCIF      */
+	{352, 288}, /* CIF       */
+	{88, 60},	/* QQSIF     */
+	{176, 120}, /* QSIF      */
+	{352, 240}, /* SIF       */
+	// VGA Resolutions
+	{40, 30},	/* QQQQVGA   */
+	{80, 60},	/* QQQVGA    */
+	{160, 120}, /* QQVGA     */
+	{320, 240}, /* QVGA      */
+	{640, 480}, /* VGA       */
+	{60, 40},	/* HQQQVGA   */
+	{120, 80},	/* HQQVGA    */
+	{240, 160}, /* HQVGA     */
+	// FFT Resolutions
+	{64, 32},	/* 64x32     */
+	{64, 64},	/* 64x64     */
+	{128, 64},	/* 128x64    */
+	{128, 128}, /* 128x64    */
+	// Other
+	{128, 160},	  /* LCD       */
+	{128, 160},	  /* QQVGA2    */
+	{720, 480},	  /* WVGA      */
+	{752, 480},	  /* WVGA2     */
+	{800, 600},	  /* SVGA      */
+	{1024, 768},  /* XGA       */
+	{1280, 1024}, /* SXGA      */
+	{1600, 1200}, /* UXGA      */
+};
 
 Image::Image()
 {
-    width   = IMG_WIDTH;
-    high    = IMG_HIGH;
-    size    = IMG_WIDTH*IMG_HIGH;
+    width   = IMG_MAX_WIDTH;
+    high    = IMG_MAX_HIGH;
+    size    = width*high;
     
-    img     = (unsigned char *)malloc(width*high*2);
-    img_rgb = (unsigned char *)malloc(width*high*3);
-    index = 0;
+
+    
+    index = 0;  
+}
+
+void Image::setImgSize(uint8_t frame_size_num)
+{
+    width   = resolution[frame_size_num][0];
+    high    = resolution[frame_size_num][1];
+    size    = width*high;
+    
+
+    index = 0;    
+    
 }
 
 bool Image::recv(unsigned char* data,int len)

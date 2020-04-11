@@ -1,10 +1,11 @@
 #ifndef WINUSBDRIVER_H
 #define WINUSBDRIVER_H
 
+#include "workspace.h"
 #include <QObject>
 
 #include "libusb.h"
-#include "workspace.h"
+
 #include "image.h"
 #include "findstr.h"
 class USBThread;
@@ -12,8 +13,11 @@ class USBThread;
 
 #define CANDLE_MAX_DEVICES 32
 
-
-#define RECV_LEN    (752*480)
+enum{
+USB_MSG_OPEN_SUCCESS,
+USB_MSG_CLOSE_SUCCESS,
+USB_MSG_OPEN_FAIL
+};
 
 enum SENSOR_STATUS{
     SENSOR_STATUS_STOP,
@@ -30,7 +34,6 @@ private:
     int ret;
     
     unsigned char *ctrl_buffer,*imu_buffer;
-    unsigned char recv_buf_tmp[RECV_LEN+1];
     int camRecvLen,imuRecvLen,recv_index;
     bool is_open;
     
@@ -38,6 +41,9 @@ private:
     libusb_device_handle *dev_handle = NULL;
     struct libusb_device_descriptor desc;
     libusb_config_descriptor *cfg = NULL;
+    libusb_device **usb_list;
+    
+	struct libusb_config_descriptor* conf;
     struct libusb_transfer* m_xfer;
     
     USBThread *camThread,*imuThread;
@@ -52,26 +58,29 @@ public:
     WinUSBDriver();
     ~WinUSBDriver();
     
-    int open(int vid,int pid);
+    void open(int vid,int pid);
     int close(void);
     static void LIBUSB_CALL completeCallback(libusb_transfer *xfer);
     void send(QByteArray byte);
     void CamRecv(void);
     void IMURecv(void);
-    int sendCtrl(char request,unsigned char *buffer,int len);
-    void ctrlCamStart();
-    void ctrlCamStop();
-    void ctrlIMUStart();
-    void ctrlIMUStop();
+    int sendCtrl(char request, uint16_t wValue,uint16_t wIndex,unsigned char *buffer);
+    int ctrlCamStart();
+    int ctrlCamStop();
+    int ctrlIMUStart();
+    int ctrlIMUStop();
+    int ctrlCamSetFrameSizeNum(uint16_t num);
     
 signals:
     void recvSignals(unsigned char *buf,int len);
     void disconnectSignals(void);
     void imuSignals(unsigned char *imu_data);
     void closeSignals(void);
-    
+    void openSignals(int vid,int pid);
+    void sendStatusSignals(int msg);
 private slots:
     void closeSlot(void);
+    void openSlot(int vid,int pid);
 };
 
 #endif // WINUSBDRIVER_H

@@ -3,6 +3,8 @@
 
 #include <QDebug>
 #include "setting.h"
+#include "log.h"
+
 
 #define QDBG(tag, args...) do{\
     char temp[4096] = tag;\
@@ -15,5 +17,6 @@
 #define DBG(args...)      QDBG("DEBUG   ", ##args)
 
 extern Setting *setting;
+extern Log *mlog;
 
 #endif // WORKSPACE_H

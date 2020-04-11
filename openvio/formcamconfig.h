@@ -2,6 +2,8 @@
 #define FORMCAMCONFIG_H
 
 #include <QWidget>
+#include "workspace.h"
+#include "winusbdriver.h"
 
 namespace Ui {
 class FormCamConfig;
@@ -14,6 +16,10 @@ class FormCamConfig : public QWidget
 public:
     explicit FormCamConfig(QWidget *parent = 0);
     ~FormCamConfig();
+    WinUSBDriver *qwinusb;
+    void setQData(WinUSBDriver *qwinusb);
+private slots:
+    void on_pb_set_config_clicked();
     
 private:
     Ui::FormCamConfig *ui;

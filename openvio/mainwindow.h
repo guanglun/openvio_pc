@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "workspace.h"
 #include <QMainWindow>
 #include <QTimer>
 #include "winusbdriver.h"
@@ -27,8 +28,7 @@ private:
     
     GLView *glview;
     IMU *imu;
-    WinUSBDriver winusb;
-    WinUSBDriver *qwindriver;
+    WinUSBDriver *qwinusb;
     QTimer *timer;
     Ui::MainWindow *ui;
     QLabel *imuStatusLabel;
@@ -45,6 +45,9 @@ private slots:
     void on_pb_imu_stop_clicked();
     void imuSlot(unsigned char *imu_data);
     void on_pb_imu_calibration_clicked();
+    
+    void sendStatusSlot(int);
+    void on_action_config_cam_triggered();
 };
 
 #endif // MAINWINDOW_H
