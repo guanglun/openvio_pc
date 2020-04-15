@@ -66,6 +66,15 @@ bool Image::recv(unsigned char* data,int len)
         return false;
     }
     
+//    if(gs_bpp == 2)
+//    {
+//        len/=2;
+//        for(int i=0;i<len;i++)
+//            temp[i] = data[i*2];
+        
+//        memcpy(data,temp,len);
+//    }
+    
     if(index + len >= size)
     {
         memcpy(img+index,data,size - index);

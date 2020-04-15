@@ -137,12 +137,12 @@ void WinUSBDriver::CamRecv(void)
                 emit disconnectSignals();
                 break;
             }else{
-                DBG("cam recv time out");
+                //DBG("cam recv time out");
             }
         }
         else if(camStatus == SENSOR_STATUS_RUNNING)
         {
-            
+            //DBG("cam recv %d",camRecvLen);
             recv_count_1s += camRecvLen;
 
             if (recv_head_status == 0 && recv_index == 0)
@@ -192,7 +192,7 @@ void WinUSBDriver::IMURecv(void)
                 emit disconnectSignals();
                 break;
             }else{
-                DBG("imu recv time out");
+                //DBG("imu recv time out");
             }
         }
         else
@@ -320,7 +320,7 @@ int WinUSBDriver::ctrlCamStart()
     {
         camStatus = SENSOR_STATUS_RUNNING;
         recv_index = 0;
-        DBG("frame size %d %d",ret,ctrl_buffer[2]);
+        DBG("frame size %d %d %d",ret,ctrl_buffer[2],ctrl_buffer[3]);
         cam_id = ctrl_buffer[1];
         img.setImgSize(ctrl_buffer[2]);
         img.gs_bpp = ctrl_buffer[3];
@@ -379,7 +379,7 @@ int WinUSBDriver::ctrlCamSetFrameSizeNum(uint16_t num)
     ret = sendCtrl(REQUEST_CAMERA_SET_FRAME_SIZE_NUM, num,0,ctrl_buffer);
     if ((ret >= 0) && (ctrl_buffer[0] == 'S'))         
     {
-        DBG("frame size %d %d",ret,ctrl_buffer[2]);
+        DBG("frame size %d %d %d",ret,ctrl_buffer[2],ctrl_buffer[3]);
         cam_id = ctrl_buffer[1];
         img.setImgSize(ctrl_buffer[2]);
         img.gs_bpp = ctrl_buffer[3];
