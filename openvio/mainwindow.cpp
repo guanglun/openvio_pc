@@ -57,9 +57,40 @@ MainWindow::~MainWindow()
 
 void MainWindow::usbRecvSlot(unsigned char *buf,int len)
 {
-    QImage myImage = QImage(qwinusb->img.img,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
+    QImage myImage;
+    if(qwinusb->cam_id == OV7725_ID)
+    {
+        if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
+        {
+            for(int i=0;i<qwinusb->img.size/2;i++)
+            {
+                qwinusb->img.img_tmp[i] = qwinusb->img.img[i*2];
+            }
+            myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
+            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
+        }else if(qwinusb->pixformat == PIXFORMAT_RGB565)
+        {
+            for(int i=0;i<qwinusb->img.size/2;i++)
+            {
+                qwinusb->img.img_tmp[i*2+1] = qwinusb->img.img[i*2];
+                qwinusb->img.img_tmp[i*2] = qwinusb->img.img[i*2+1];
+            }
+            myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_RGB16);
+            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
+        }
+    }else if(qwinusb->cam_id == MT9V034_ID)
+    {
+        if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
+        {
+            myImage = QImage(qwinusb->img.img,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
+            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
+        }
+    }else{
+        return;
+    }
     
-    ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
+    //QImage myImage = QImage(qwinusb->img.img,qwinusb->img.width,qwinusb->img.high,QImage::Format_);
+    
 }
 
 void MainWindow::on_pb_open_clicked()

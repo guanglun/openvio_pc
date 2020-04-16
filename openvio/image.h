@@ -13,6 +13,7 @@ class Image : public QObject
     Q_OBJECT
 public:
     unsigned char img[IMG_MAX_WIDTH*IMG_MAX_HIGH*2];
+    unsigned char img_tmp[IMG_MAX_WIDTH*IMG_MAX_HIGH*2];
     unsigned char img_rgb[IMG_MAX_WIDTH*IMG_MAX_HIGH*3];
     int width,high,index,size;
     Image();

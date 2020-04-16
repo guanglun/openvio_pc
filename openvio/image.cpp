@@ -51,7 +51,7 @@ void Image::setImgSize(uint8_t frame_size_num)
 {
     width   = resolution[frame_size_num][0];
     high    = resolution[frame_size_num][1];
-    size    = width*high;
+    size    = width*high*gs_bpp;
     
 
     index = 0;    

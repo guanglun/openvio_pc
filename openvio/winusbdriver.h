@@ -22,6 +22,16 @@ class USBThread;
 #define LEPTON_ID           (0x54)
 #define HM01B0_ID           (0xB0)
 
+typedef enum {
+    PIXFORMAT_INVALID = 0,
+    PIXFORMAT_BINARY,    // 1BPP/BINARY
+    PIXFORMAT_GRAYSCALE, // 1BPP/GRAYSCALE
+    PIXFORMAT_RGB565,    // 2BPP/RGB565
+    PIXFORMAT_YUV422,    // 2BPP/YUV422
+    PIXFORMAT_BAYER,     // 1BPP/RAW
+    PIXFORMAT_JPEG,      // JPEG/COMPRESSED
+} pixformat_t;
+
 enum{
 USB_MSG_OPEN_SUCCESS,
 USB_MSG_CLOSE_SUCCESS,
@@ -41,7 +51,7 @@ private:
     int recv_len_count = 0;
     
     int ret;
-    unsigned char cam_id;
+    
     unsigned char *ctrl_buffer,*imu_buffer;
     int camRecvLen,imuRecvLen,recv_index;
     bool is_open;
@@ -62,6 +72,8 @@ private:
     
 public:
     Image img;
+    unsigned char cam_id;
+    pixformat_t pixformat;
     unsigned int recv_count_1s = 0,frame_fps = 0,imu_hz = 0;
     
     WinUSBDriver();

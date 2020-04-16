@@ -125,10 +125,14 @@ void WinUSBDriver::CamRecv(void)
     int recv_head_status = 0;
     int findRet = 0;
     FindStr findStr;
-    findStr.config((unsigned char *)"CAM", 3);
+    uint8_t head_tmp[1024];
+    findStr.config((unsigned char *)"CAMERA", 6);
     while (is_open)
     {
-        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img + recv_index), img.size*img.gs_bpp, &camRecvLen, 1000);
+        if (recv_head_status == 0)
+            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(head_tmp), 1024, &camRecvLen, 1000);
+        else
+            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img + recv_index), 512*1024, &camRecvLen, 1000);
         if (ret < 0)
         {
             if (ret != -7)
@@ -142,12 +146,12 @@ void WinUSBDriver::CamRecv(void)
         }
         else if(camStatus == SENSOR_STATUS_RUNNING)
         {
-            //DBG("cam recv %d",camRecvLen);
+            //DBG("cam recv %d %d",camRecvLen,recv_index);
             recv_count_1s += camRecvLen;
 
-            if (recv_head_status == 0 && recv_index == 0)
+            if (recv_head_status == 0)
             {
-                findRet = findStr.input(img.img, camRecvLen);
+                findRet = findStr.input(head_tmp, camRecvLen);
                 if (findRet > 0)
                 {
                     recv_head_status = 1;
@@ -320,10 +324,12 @@ int WinUSBDriver::ctrlCamStart()
     {
         camStatus = SENSOR_STATUS_RUNNING;
         recv_index = 0;
-        DBG("frame size %d %d %d",ret,ctrl_buffer[2],ctrl_buffer[3]);
+        DBG("ret:%d\t id:%d \t bpp:%d\t size:%d\t pixformat:%d",ret,ctrl_buffer[1],ctrl_buffer[3],ctrl_buffer[2],ctrl_buffer[4]);
         cam_id = ctrl_buffer[1];
-        img.setImgSize(ctrl_buffer[2]);
         img.gs_bpp = ctrl_buffer[3];
+        img.setImgSize(ctrl_buffer[2]);
+        pixformat = (pixformat_t)ctrl_buffer[4];
+        
         return 0;
     }
     
@@ -379,10 +385,12 @@ int WinUSBDriver::ctrlCamSetFrameSizeNum(uint16_t num)
     ret = sendCtrl(REQUEST_CAMERA_SET_FRAME_SIZE_NUM, num,0,ctrl_buffer);
     if ((ret >= 0) && (ctrl_buffer[0] == 'S'))         
     {
-        DBG("frame size %d %d %d",ret,ctrl_buffer[2],ctrl_buffer[3]);
+        DBG("ret:%d\t id:%d \t bpp:%d\t size:%d\t pixformat:%d",ret,ctrl_buffer[1],ctrl_buffer[3],ctrl_buffer[2],ctrl_buffer[4]);
         cam_id = ctrl_buffer[1];
-        img.setImgSize(ctrl_buffer[2]);
         img.gs_bpp = ctrl_buffer[3];
+        img.setImgSize(ctrl_buffer[2]);
+        pixformat = (pixformat_t)ctrl_buffer[4];
+        
         return 0;
     }
     return -1;

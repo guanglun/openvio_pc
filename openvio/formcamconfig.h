@@ -21,6 +21,12 @@ public:
 private slots:
     void on_pb_set_config_clicked();
     
+    void on_pb_exit_clicked();
+    
+    void on_pb_cam_start_clicked();
+    
+    void on_pb_cam_stop_clicked();
+    
 private:
     Ui::FormCamConfig *ui;
 };

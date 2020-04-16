@@ -56,3 +56,18 @@ void FormCamConfig::on_pb_set_config_clicked()
     DBG("set frame num %d",num);
     qwinusb->ctrlCamSetFrameSizeNum(num);
 }
+
+void FormCamConfig::on_pb_exit_clicked()
+{
+    close();
+}
+
+void FormCamConfig::on_pb_cam_start_clicked()
+{
+    qwinusb->ctrlCamStart();
+}
+
+void FormCamConfig::on_pb_cam_stop_clicked()
+{
+    qwinusb->ctrlCamStop();
+}
