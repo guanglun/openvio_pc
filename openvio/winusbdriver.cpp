@@ -182,11 +182,14 @@ void WinUSBDriver::IMURecv(void)
     int recv_head_status = 0;
     int findRet = 0;
     FindStr findStr;
-    findStr.config((unsigned char *)"IMU", 3);
-
+    findStr.config((unsigned char *)"ICMIMU", 6);
+    uint8_t head_tmp[1024];
     while (is_open)
-    {
-        ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), IMU_BUF_SIZE, &imuRecvLen, 1000);
+    {   
+        if (recv_head_status == 0)
+            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(head_tmp), 1024, &imuRecvLen, 1000);
+        else
+            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), IMU_BUF_SIZE, &imuRecvLen, 1000);
         if (ret < 0)
         {
 
@@ -205,7 +208,7 @@ void WinUSBDriver::IMURecv(void)
 
             if (recv_head_status == 0)
             {
-                findRet = findStr.input(imu_buffer, imuRecvLen);
+                findRet = findStr.input(head_tmp, imuRecvLen);
                 if (findRet > 0)
                 {
                     recv_head_status = 1;
