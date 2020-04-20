@@ -139,20 +139,57 @@ void MainWindow::imuSlot(unsigned char *imu_data)
 {
     static short acc[3],gyro[3],temp;
     static T_float_angle Att_Angle;
-    
-    imu->recvData(imu_data,&Att_Angle);
+    static uint32_t timer;
+    static uint32_t t1,t1_old;
+    static uint16_t t2,t2_old;
+    static boolean is_first = true;
+    static float d_time = 0;
+
+    qwinusb->imu_hz++;
+
+    t1 = (uint32_t)(imu_data[0]<<24);
+    t1 |= (uint32_t)(imu_data[1]<<16);
+    t1 |= (uint32_t)(imu_data[2]<<8);
+    t1 |= (uint32_t)(imu_data[3]<<0);
+
+    t2 = (uint16_t)(imu_data[4]<<8);
+    t2 |= (uint16_t)(imu_data[5]<<0);
+
+    if(is_first == true)
+    {
+        is_first = false;
+        t1_old = t1;
+        t2_old = t2;
+        return;
+    }
+
+    if(t2 > t2_old)
+    {
+        timer = t2-t2_old;
+    }else{
+        timer = (uint32_t)t2 + 50000 - t2_old;
+    }
+
+    t1_old = t1;
+    t2_old = t2;
+
+    d_time = timer*0.00001;
+//    DBG("%d\t%d\t%d\t%f",t1,t2,timer,d_time);
+
+
+    imu->recvData(imu_data+6,&Att_Angle,d_time);
     glview->setAngle(Att_Angle.rol,Att_Angle.pit,Att_Angle.yaw);
             
-    acc[0] = (short)((imu_data[0]<<8)|imu_data[1]);
-    acc[1] = (short)((imu_data[2]<<8)|imu_data[3]);
-    acc[2] = (short)((imu_data[4]<<8)|imu_data[5]);
+    acc[0] = (short)((imu_data[0+6]<<8)|imu_data[1+6]);
+    acc[1] = (short)((imu_data[2+6]<<8)|imu_data[3+6]);
+    acc[2] = (short)((imu_data[4+6]<<8)|imu_data[5+6]);
     
-    temp = (short)((imu_data[6]<<8)|imu_data[7]);
+    gyro[0] = (short)((imu_data[6+6]<<8)|imu_data[7+6]);
+    gyro[1] = (short)((imu_data[8+6]<<8)|imu_data[9+6]);
+    gyro[2] = (short)((imu_data[10+6]<<8)|imu_data[11+6]);
     
-    gyro[0] = (short)((imu_data[8]<<8)|imu_data[9]);
-    gyro[1] = (short)((imu_data[10]<<8)|imu_data[11]);
-    gyro[2] = (short)((imu_data[12]<<8)|imu_data[13]);
-    
+    DBG("%d\t%d\t%d\t%d\t%d\t%d",acc[0],acc[1],acc[2],gyro[0],gyro[1],gyro[2]);
+
     ui->lb_acc_x->setText(QString::number(acc[0]));
     ui->lb_acc_y->setText(QString::number(acc[1]));
     ui->lb_acc_z->setText(QString::number(acc[2]));
@@ -179,6 +216,9 @@ void MainWindow::on_pb_send_clicked()
 
 void MainWindow::onTimeOut()
 {
+    ui->lb_imu_hz->setText(QString::number(qwinusb->imu_hz)+"Hz");
+    qwinusb->imu_hz = 0;
+
     QString str;
     if(qwinusb->recv_count_1s < 1024)
     {
@@ -202,8 +242,7 @@ void MainWindow::onTimeOut()
     qwinusb->recv_count_1s = 0;
     status_speed->setText(str);
     
-    ui->lb_imu_hz->setText(QString::number(qwinusb->imu_hz)+"Hz");
-    qwinusb->imu_hz = 0;
+
 }
 
 void MainWindow::on_pb_cam_start_clicked()

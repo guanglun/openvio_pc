@@ -12,7 +12,7 @@
 //采样速度
 #define Kp 1.000f    // proportional gain governs rate of convergence to accelerometer/magnetometer
 #define Ki 0.001f    // integral gain governs rate of convergence of gyroscope biases
-#define halfT 0.001f // half the sample period
+#define halfT 0.0025f // half the sample period
 
 IMU::IMU()
 {
@@ -25,9 +25,9 @@ void IMU::startCalibration(void)
     
     
     DBG("start calibration");
-    isYawCalStart = true;
-    isGyroCalStart = true;
-    isAccCalStart = true;
+    isYawCalStart = false;
+    isGyroCalStart = false;
+    isAccCalStart = false;
 }
 
 void IMU::calibration(T_int16_xyz *acc,T_int16_xyz *gyro)
@@ -100,12 +100,9 @@ void IMU::calibration(T_int16_xyz *acc,T_int16_xyz *gyro)
         }
 
     }
-    
-    
-    
 }
 
-void IMU::recvData(unsigned char *imu_data,T_float_angle *angle)
+void IMU::recvData(unsigned char *imu_data,T_float_angle *angle,float time)
 {
     Acc.X = (short)((imu_data[0]<<8)|imu_data[1]) - ACC_OFFSET.X;
     Acc.Y = (short)((imu_data[2]<<8)|imu_data[3]) - ACC_OFFSET.Y;
@@ -119,7 +116,7 @@ void IMU::recvData(unsigned char *imu_data,T_float_angle *angle)
     
     calibration(&Acc,&Gyr);
     prepareData(&Acc,&Acc_AVG);
-    update(&Gyr,&Acc_AVG,angle);
+    update(&Gyr,&Acc_AVG,angle,time);
     
 }
 
@@ -147,7 +144,7 @@ void IMU::prepareData(T_int16_xyz *acc_in, T_int16_xyz *acc_out)
     filter_cnt = 0;
 }
 
-void IMU::update(T_int16_xyz *gyr, T_int16_xyz *acc, T_float_angle *angle)
+void IMU::update(T_int16_xyz *gyr, T_int16_xyz *acc, T_float_angle *angle,float time)
 {
   float ax = acc->X, ay = acc->Y, az = acc->Z;
   float gx = gyr->X, gy = gyr->Y, gz = gyr->Z;
@@ -199,10 +196,10 @@ void IMU::update(T_int16_xyz *gyr, T_int16_xyz *acc, T_float_angle *angle)
   gz = gz + Kp * ez + ezInt;
 
   // integrate quaternion rate and normalise
-  q0 = q0 + (-q1 * gx - q2 * gy - q3 * gz) * halfT;
-  q1 = q1 + (q0 * gx + q2 * gz - q3 * gy) * halfT;
-  q2 = q2 + (q0 * gy - q1 * gz + q3 * gx) * halfT;
-  q3 = q3 + (q0 * gz + q1 * gy - q2 * gx) * halfT;
+  q0 = q0 + (-q1 * gx - q2 * gy - q3 * gz) * (time/2);//halfT;
+  q1 = q1 + (q0 * gx + q2 * gz - q3 * gy) * (time/2);//halfT;
+  q2 = q2 + (q0 * gy - q1 * gz + q3 * gx) * (time/2);//halfT;
+  q3 = q3 + (q0 * gz + q1 * gy - q2 * gx) * (time/2);//halfT;
 
   // normalise quaternion
   norm = sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);

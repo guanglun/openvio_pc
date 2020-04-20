@@ -71,7 +71,8 @@ win32{
 
     LIBS += "$$PWD/lib/libusb-1.0.a"
     
-    INCLUDEPATH += ./eigen-3.2.10
+    INCLUDEPATH += "$$PWD/eigen-3.2.10"
+    INCLUDEPATH += "$$PWD/glut"
 }
 
 unix{

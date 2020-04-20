@@ -41,12 +41,12 @@ private:
     
     void calibration(T_int16_xyz *acc,T_int16_xyz *gyro);
     void prepareData(T_int16_xyz *acc_in,T_int16_xyz *acc_out);
-    void update(T_int16_xyz *gyr, T_int16_xyz *acc, T_float_angle *angle);
+    void update(T_int16_xyz *gyr, T_int16_xyz *acc, T_float_angle *angle,float time);
     
 public:
     IMU();
     void startCalibration(void);
-    void recvData(unsigned char *imu_data,T_float_angle *angle);
+    void recvData(unsigned char *imu_data,T_float_angle *angle,float time);
 
     
 };

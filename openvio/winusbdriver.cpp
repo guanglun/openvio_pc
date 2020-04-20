@@ -184,12 +184,18 @@ void WinUSBDriver::IMURecv(void)
     FindStr findStr;
     findStr.config((unsigned char *)"ICMIMU", 6);
     uint8_t head_tmp[1024];
+    uint32_t index = 0;
+
+//    static uint32_t t1,t1_old;
+//    static uint16_t t2,t2_old;
+//    static boolean is_first = true;
+
     while (is_open)
     {   
-        if (recv_head_status == 0)
-            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(head_tmp), 1024, &imuRecvLen, 1000);
-        else
-            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer), IMU_BUF_SIZE, &imuRecvLen, 1000);
+//        if (recv_head_status == 0)
+//            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(head_tmp), 1024, &imuRecvLen, 1000);
+//        else
+            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer+index), 20, &imuRecvLen, 10);
         if (ret < 0)
         {
 
@@ -206,20 +212,39 @@ void WinUSBDriver::IMURecv(void)
         {
             recv_count_1s += imuRecvLen;
 
-            if (recv_head_status == 0)
-            {
-                findRet = findStr.input(head_tmp, imuRecvLen);
-                if (findRet > 0)
-                {
-                    recv_head_status = 1;
-                }
-            }
-            else
-            {
-                recv_head_status = 0;
-                imu_hz++;
-                emit imuSignals(imu_buffer);
-            }
+//            if (recv_head_status == 0)
+//            {
+//                findRet = findStr.input(head_tmp, imuRecvLen);
+//                if (findRet > 0)
+//                {
+//                    recv_head_status = 1;
+//                }
+//            }
+//            else
+//            {
+//                recv_head_status = 0;
+//                imu_hz++;
+                 if(imuRecvLen == 20)
+                 {
+
+//                     t1 = (uint32_t)(imu_buffer[0]<<24);
+//                     t1 |= (uint32_t)(imu_buffer[1]<<16);
+//                     t1 |= (uint32_t)(imu_buffer[2]<<8);
+//                     t1 |= (uint32_t)(imu_buffer[3]<<0);
+
+//                     t2 = (uint16_t)(imu_buffer[4]<<8);
+//                     t2 |= (uint16_t)(imu_buffer[5]<<0);
+
+//                     DBG("%d\t%d",t1,t2);
+
+                     emit imuSignals(imu_buffer+index);
+                     index+=20;
+                     if(index >=1024)
+                     {
+                         index = 0;
+                     }
+                 }
+//            }
         }
 
         
