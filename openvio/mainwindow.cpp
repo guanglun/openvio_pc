@@ -188,7 +188,9 @@ void MainWindow::imuSlot(unsigned char *imu_data)
     gyro[1] = (short)((imu_data[8+6]<<8)|imu_data[9+6]);
     gyro[2] = (short)((imu_data[10+6]<<8)|imu_data[11+6]);
     
-    DBG("%d\t%d\t%d\t%d\t%d\t%d",acc[0],acc[1],acc[2],gyro[0],gyro[1],gyro[2]);
+    //DBG("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d",acc[0],acc[1],acc[2],gyro[0],gyro[1],gyro[2]);
+
+    //DBG("%d",gyro[2]);
 
     ui->lb_acc_x->setText(QString::number(acc[0]));
     ui->lb_acc_y->setText(QString::number(acc[1]));
