@@ -37,7 +37,8 @@ SOURCES += \
     setting.cpp \
     findstr.cpp \
     log.cpp \
-    formcamconfig.cpp
+    formcamconfig.cpp \
+    imuso3.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -53,7 +54,8 @@ HEADERS += \
     setting.h \
     findstr.h \
     log.h \
-    formcamconfig.h
+    formcamconfig.h \
+    imuso3.h
 
 FORMS += \
         mainwindow.ui \

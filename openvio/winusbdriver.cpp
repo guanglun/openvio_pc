@@ -7,7 +7,8 @@
 
 #define USB_TIMEOUT 10000 //传输数据的时间延迟
 
-#define IMU_BUF_SIZE 1024
+#define IMU_PACKAGE_SIZE 24
+#define IMU_PACKAGE_NUM  100
 
 WinUSBDriver::WinUSBDriver()
 {
@@ -18,7 +19,7 @@ WinUSBDriver::WinUSBDriver()
     imuThread->init(this, "imu");
 
     ctrl_buffer = (unsigned char *)malloc(1024);
-    imu_buffer = (unsigned char *)malloc(IMU_BUF_SIZE);
+    imu_buffer = (unsigned char *)malloc(IMU_PACKAGE_SIZE*IMU_PACKAGE_NUM);
 
     camStatus = SENSOR_STATUS_STOP;
     imuStatus = SENSOR_STATUS_STOP;
@@ -195,7 +196,7 @@ void WinUSBDriver::IMURecv(void)
 //        if (recv_head_status == 0)
 //            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(head_tmp), 1024, &imuRecvLen, 1000);
 //        else
-            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer+index), 20, &imuRecvLen, 10);
+            ret = libusb_bulk_transfer(dev_handle, IMU_EPADDR, (unsigned char *)(imu_buffer+index), IMU_PACKAGE_SIZE, &imuRecvLen, 10);
         if (ret < 0)
         {
 
@@ -224,7 +225,7 @@ void WinUSBDriver::IMURecv(void)
 //            {
 //                recv_head_status = 0;
 //                imu_hz++;
-                 if(imuRecvLen == 20)
+                 if(imuRecvLen == IMU_PACKAGE_SIZE)
                  {
 
 //                     t1 = (uint32_t)(imu_buffer[0]<<24);
@@ -238,8 +239,8 @@ void WinUSBDriver::IMURecv(void)
 //                     DBG("%d\t%d",t1,t2);
 
                      emit imuSignals(imu_buffer+index);
-                     index+=20;
-                     if(index >=1024)
+                     index+=IMU_PACKAGE_SIZE;
+                     if(index >= (IMU_PACKAGE_SIZE*IMU_PACKAGE_NUM))
                      {
                          index = 0;
                      }
