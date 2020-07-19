@@ -34,7 +34,10 @@ private:
     QLabel *imuStatusLabel;
     
 private slots:
-    void usbRecvSlot(unsigned char *buf,int len);
+    void camSlot(int index);
+    void imuSlot(int index);
+
+
     void disconnectSlot(void);
     void on_pb_open_clicked();
     void on_pb_send_clicked();
@@ -43,7 +46,6 @@ private slots:
     void on_pb_cam_stop_clicked();
     void on_pb_imu_start_clicked();
     void on_pb_imu_stop_clicked();
-    void imuSlot(unsigned char *imu_data);
     void on_pb_imu_calibration_clicked();
     
     void sendStatusSlot(int);

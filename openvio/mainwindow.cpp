@@ -23,10 +23,10 @@ MainWindow::MainWindow(QWidget *parent) :
     qwinusb = new WinUSBDriver();
     
     connect(qwinusb,SIGNAL(sendStatusSignals(int)),this,SLOT(sendStatusSlot(int)));
-    connect(qwinusb,SIGNAL(recvSignals(unsigned char *,int)),this,SLOT(usbRecvSlot(unsigned char *,int)));
+    connect(qwinusb,SIGNAL(camSignals(int)),this,SLOT(camSlot(int)));
+    connect(qwinusb,SIGNAL(imuSignals(int)),this,SLOT(imuSlot(int)));
     connect(qwinusb,SIGNAL(disconnectSignals()),this,SLOT(disconnectSlot()));
-    connect(qwinusb,SIGNAL(imuSignals(unsigned char *)),this,SLOT(imuSlot(unsigned char *)));
-    
+
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeOut()));
     timer->start(1000);
@@ -55,16 +55,52 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::usbRecvSlot(unsigned char *buf,int len)
+void MainWindow::camSlot(int index)
 {
+    static uint32_t timer;
+    static uint32_t t1,t1_old;
+    static uint16_t t2,t2_old;
+    static boolean is_first = true;
+    static float d_time = 0;
+
     QImage myImage;
+    t1 = (uint32_t)(qwinusb->img.time[index][0]<<24);
+    t1 |= (uint32_t)(qwinusb->img.time[index][1]<<16);
+    t1 |= (uint32_t)(qwinusb->img.time[index][2]<<8);
+    t1 |= (uint32_t)(qwinusb->img.time[index][3]<<0);
+
+    t2 = (uint16_t)(qwinusb->img.time[index][4]<<8);
+    t2 |= (uint16_t)(qwinusb->img.time[index][5]<<0);
+
+    if(is_first == true)
+    {
+        is_first = false;
+        t1_old = t1;
+        t2_old = t2;
+        return;
+    }
+
+    if(t2 > t2_old)
+    {
+        timer = t2-t2_old;
+    }else{
+        timer = (uint32_t)t2 + 50000 - t2_old;
+    }
+
+    t1_old = t1;
+    t2_old = t2;
+
+    d_time = timer*0.00001;
+    DBG("cam %d\t%d\t%d\t%f",t1,t2,timer,d_time);
+
+
     if(qwinusb->cam_id == OV7725_ID)
     {
         if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
         {
             for(int i=0;i<qwinusb->img.size/2;i++)
             {
-                qwinusb->img.img_tmp[i] = qwinusb->img.img[i*2];
+                qwinusb->img.img_tmp[i] = qwinusb->img.img[index][i*2];
             }
             myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
             ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
@@ -72,8 +108,8 @@ void MainWindow::usbRecvSlot(unsigned char *buf,int len)
         {
             for(int i=0;i<qwinusb->img.size/2;i++)
             {
-                qwinusb->img.img_tmp[i*2+1] = qwinusb->img.img[i*2];
-                qwinusb->img.img_tmp[i*2] = qwinusb->img.img[i*2+1];
+                qwinusb->img.img_tmp[i*2+1] = qwinusb->img.img[index][i*2];
+                qwinusb->img.img_tmp[i*2] = qwinusb->img.img[index][i*2+1];
             }
             myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_RGB16);
             ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
@@ -82,7 +118,7 @@ void MainWindow::usbRecvSlot(unsigned char *buf,int len)
     {
         if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
         {
-            myImage = QImage(qwinusb->img.img,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
+            myImage = QImage(qwinusb->img.img[index],qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
             ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
         }
     }else{
@@ -135,7 +171,7 @@ void MainWindow::sendStatusSlot(int msg)
     }
 }
 
-void MainWindow::imuSlot(unsigned char *imu_data)
+void MainWindow::imuSlot(int index)
 {
     static short acc[3],gyro[3],temp;
     static T_float_angle Att_Angle;
@@ -144,6 +180,9 @@ void MainWindow::imuSlot(unsigned char *imu_data)
     static uint16_t t2,t2_old;
     static boolean is_first = true;
     static float d_time = 0;
+
+
+    uint8_t *imu_data = qwinusb->img.imu[index];
 
     qwinusb->imu_hz++;
 
@@ -174,7 +213,7 @@ void MainWindow::imuSlot(unsigned char *imu_data)
     t2_old = t2;
 
     d_time = timer*0.00001;
-//    DBG("%d\t%d\t%d\t%f",t1,t2,timer,d_time);
+    //DBG("imu %d\t%d\t%d\t%f",t1,t2,timer,d_time);
 
 
     imu->recvData(imu_data+6,&Att_Angle,d_time);

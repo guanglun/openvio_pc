@@ -52,7 +52,7 @@ private:
     
     int ret;
     
-    unsigned char *ctrl_buffer,*imu_buffer;
+    unsigned char *ctrl_buffer;
     int camRecvLen,imuRecvLen,recv_index;
     bool is_open;
     
@@ -93,9 +93,10 @@ public:
     int ctrlCamSetFrameSizeNum(uint16_t num);
     
 signals:
-    void recvSignals(unsigned char *buf,int len);
+    void camSignals(int index);
+    void imuSignals(int index);
+
     void disconnectSignals(void);
-    void imuSignals(unsigned char *imu_data);
     void closeSignals(void);
     void openSignals(int vid,int pid);
     void sendStatusSignals(int msg);

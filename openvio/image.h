@@ -6,13 +6,18 @@
 #define IMG_MAX_WIDTH   752
 #define IMG_MAX_HIGH    480
 
+#define IMG_FRAME_SIZE_MAX 30
+#define IMU_FRAME_SIZE_MAX 100
 
+#define IMU_PACKAGE_SIZE 24
 
 class Image : public QObject
 {
     Q_OBJECT
 public:
-    unsigned char img[IMG_MAX_WIDTH*IMG_MAX_HIGH*2];
+    unsigned char imu[IMU_FRAME_SIZE_MAX][IMU_PACKAGE_SIZE];
+    unsigned char time[IMG_FRAME_SIZE_MAX][6];
+    unsigned char img[IMG_FRAME_SIZE_MAX][IMG_MAX_WIDTH*IMG_MAX_HIGH*2];
     unsigned char img_tmp[IMG_MAX_WIDTH*IMG_MAX_HIGH*2];
     unsigned char img_rgb[IMG_MAX_WIDTH*IMG_MAX_HIGH*3];
     int width,high,index,size;
