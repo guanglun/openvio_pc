@@ -8,13 +8,13 @@ FindStr::FindStr()
     
 }
 
-FindStr::config(unsigned char *str,int len)
+void FindStr::config(unsigned char *str,int len)
 {
     this->str = str;
     this->len = len;
 }
 
-FindStr::reset()
+void FindStr::reset(void)
 {
     index=0;
 }

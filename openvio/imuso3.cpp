@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "imu.h"
 #include <QtMath>
+#include "workspace.h"
 
 #define M_PI_F 3.1415926
 
@@ -256,6 +257,8 @@ void IMUSO3Thread(T_int16_xyz *gyri, T_int16_xyz *acci, T_int16_xyz *magi, T_flo
     mag[0] = (float)magi->X;
     mag[1] = (float)magi->Y;
     mag[2] = (float)magi->Z;
+
+    DBG("%f\t%f\t%f",acc[0],acc[1],acc[2]);
 
     // NOTE : Accelerometer is reversed.
     // Because proper mount of PX4 will give you a reversed accelerometer readings.

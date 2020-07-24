@@ -13,8 +13,8 @@ public:
     int len = 0;
     int index = 0;
     FindStr();
-    config(unsigned char *str,int len);
-    reset();
+    void config(unsigned char *str,int len);
+    void reset();
     int input(unsigned char *data,int len);
 };
 

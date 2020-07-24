@@ -170,7 +170,7 @@ void IMU::update(T_int16_xyz *gyr, T_int16_xyz *acc, T_int16_xyz *mag, T_float_a
     gz = gyr->Z * (500.0 / 65536.0) * (M_PI / 180.0);
 
     //DBG("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d",gx,gy,gz,ax,ay,az,time,mag->X,mag->Y,mag->Z);
-    DBG("%d\t%d\t%d", mag->X, mag->Y, mag->Z);
+    //DBG("%d\t%d\t%d", mag->X, mag->Y, mag->Z);
 
     float norm;
     //  float hx, hy, hz, bx, bz;

@@ -60,7 +60,7 @@ void MainWindow::camSlot(int index)
     static uint32_t timer;
     static uint32_t t1,t1_old;
     static uint16_t t2,t2_old;
-    static boolean is_first = true;
+    static bool is_first = true;
     static float d_time = 0;
 
     QImage myImage;
@@ -178,7 +178,7 @@ void MainWindow::imuSlot(int index)
     static uint32_t timer;
     static uint32_t t1,t1_old;
     static uint16_t t2,t2_old;
-    static boolean is_first = true;
+    static bool is_first = true;
     static float d_time = 0;
 
 
