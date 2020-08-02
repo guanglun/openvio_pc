@@ -116,6 +116,7 @@ void WinUSBDriver::CamRecv(void)
 {
     DBG("cam recv start");
 
+
     int img_index = 0;
     int recv_head_status = 0;
     int findRet = 0;

@@ -28,7 +28,8 @@ const QStringList FrameSizeStr={
 	"800x600 SVGA",
 	"1024x768 XGA",
 	"1280x1024 SXGA",
-	"1600x1200 UXGA"
+    "1600x1200 UXGA",
+    "240x240 LCD"
 };
 
 FormCamConfig::FormCamConfig(QWidget *parent) :

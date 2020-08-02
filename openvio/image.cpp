@@ -34,6 +34,7 @@ const int resolution[][2] = {
 	{1024, 768},  /* XGA       */
 	{1280, 1024}, /* SXGA      */
 	{1600, 1200}, /* UXGA      */
+    {240, 240}, /* LCD      */
 };
 
 Image::Image()
