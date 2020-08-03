@@ -175,8 +175,8 @@ void WinUSBDriver::CamRecv(void)
             else if (recv_head_status == 0)
             {
                 DBG("cam recv error len %d", camRecvLen);
-                emit disconnectSignals();
-                break;
+//                emit disconnectSignals();
+//                break;
             }
             else
             {
