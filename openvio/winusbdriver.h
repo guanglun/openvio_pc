@@ -91,7 +91,8 @@ public:
     int ctrlIMUStart();
     int ctrlIMUStop();
     int ctrlCamSetFrameSizeNum(uint16_t num);
-    
+    int ctrlCamSetExposure(int value);
+
 signals:
     void camSignals(int index);
     void imuSignals(int index);

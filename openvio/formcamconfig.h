@@ -27,6 +27,10 @@ private slots:
     
     void on_pb_cam_stop_clicked();
     
+    void on_pb_set_config_exposure_clicked();
+
+    void on_pb_set_config_image_size_clicked();
+
 private:
     Ui::FormCamConfig *ui;
 };

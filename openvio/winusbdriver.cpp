@@ -305,6 +305,7 @@ void WinUSBDriver::closeSlot(void)
 #define REQUEST_CAMERA_START 0xA0
 #define REQUEST_CAMERA_STOP 0xA1
 #define REQUEST_CAMERA_SET_FRAME_SIZE_NUM 0xA2
+#define REQUEST_CAMERA_SET_EXPOSURE 0xA3
 
 #define REQUEST_IMU_START 0xB0
 #define REQUEST_IMU_STOP 0xB1
@@ -408,6 +409,24 @@ int WinUSBDriver::ctrlCamSetFrameSizeNum(uint16_t num)
         img.gs_bpp = ctrl_buffer[3];
         img.setImgSize(ctrl_buffer[2]);
         pixformat = (pixformat_t)ctrl_buffer[4];
+
+        return 0;
+    }
+    return -1;
+}
+
+int WinUSBDriver::ctrlCamSetExposure(int value)
+{
+
+    uint8_t ret = 0;
+    uint16_t wValue, wIndex;
+    wValue = (uint16_t)(value>>16);
+    wIndex = (uint16_t)(value>>0);
+
+    ret = sendCtrl(REQUEST_CAMERA_SET_EXPOSURE, wValue, wIndex, ctrl_buffer);
+    if ((ret >= 0) && (ctrl_buffer[0] == 'S'))
+    {
+        DBG("ret:%d\t", ret);
 
         return 0;
     }

@@ -91,7 +91,7 @@ void MainWindow::camSlot(int index)
     t2_old = t2;
 
     d_time = timer*0.00001;
-    DBG("cam %d\t%d\t%d\t%f",t1,t2,timer,d_time);
+    //DBG("cam %d\t%d\t%d\t%f",t1,t2,timer,d_time);
 
 
     if(qwinusb->cam_id == OV7725_ID)

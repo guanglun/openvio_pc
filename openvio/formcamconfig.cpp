@@ -39,6 +39,8 @@ FormCamConfig::FormCamConfig(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowTitle("摄像头设置");
     ui->comboBoxCamSize->addItems(FrameSizeStr);
+
+    ui->le_exposure->setValidator(new QIntValidator(0,99999999,this));
 }
 
 void FormCamConfig::setQData(WinUSBDriver *qwinusb)
@@ -53,9 +55,10 @@ FormCamConfig::~FormCamConfig()
 
 void FormCamConfig::on_pb_set_config_clicked()
 {
-    int num = ui->comboBoxCamSize->currentIndex();
-    DBG("set frame num %d",num);
-    qwinusb->ctrlCamSetFrameSizeNum(num);
+
+
+
+
 }
 
 void FormCamConfig::on_pb_exit_clicked()
@@ -71,4 +74,26 @@ void FormCamConfig::on_pb_cam_start_clicked()
 void FormCamConfig::on_pb_cam_stop_clicked()
 {
     qwinusb->ctrlCamStop();
+}
+
+void FormCamConfig::on_pb_set_config_exposure_clicked()
+{
+    int exposure_value = 0;
+
+    exposure_value = ui->le_exposure->text().toInt();
+
+    if(ui->cb_exposure->checkState() == Qt::CheckState::Checked)
+    {
+        exposure_value = -exposure_value;
+    }
+
+    DBG("exposure_value %d",exposure_value);
+    qwinusb->ctrlCamSetExposure(exposure_value);
+}
+
+void FormCamConfig::on_pb_set_config_image_size_clicked()
+{
+    int num = ui->comboBoxCamSize->currentIndex();
+    DBG("set frame num %d",num);
+    qwinusb->ctrlCamSetFrameSizeNum(num);
 }
