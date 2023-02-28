@@ -56,6 +56,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+extern char imgbuf[10][(752*480)];
+
 void MainWindow::camSlot(int index)
 {
     static uint32_t timer;
@@ -122,6 +124,20 @@ void MainWindow::camSlot(int index)
     {
         //if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
         {
+
+//            for(int i=0;i<752*480/8;i++)
+//            {
+//                for(int ii=0;ii<8;ii++)
+//                {
+//                    if(((imgbuf[index][i] >> ii) & 0x01) == 0x01)
+//                    {
+//                        qwinusb->img.img[index][i*8+ii] = 0xFF;
+//                    }else{
+//                        qwinusb->img.img[index][i*8+ii] = 0x00;
+//                    }
+//                }
+//            }
+
             myImage = QImage(qwinusb->img.img[index],qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
             pixImage = QPixmap::fromImage(myImage);
             ui->lb_img->setPixmap(pixImage);
@@ -293,8 +309,15 @@ void MainWindow::onTimeOut()
     str += " ";
     str += QString::number(qwinusb->frame_fps);
     str += "fps";
+
+    if(qwinusb->recv_count_1s/1024/1024 != 20)
+    {
+        str += " ERROR!!!!!!!";
+    }
+
     qwinusb->frame_fps = 0;
     
+
     qwinusb->recv_count_1s = 0;
     status_speed->setText(str);
     

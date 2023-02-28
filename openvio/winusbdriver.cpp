@@ -149,7 +149,7 @@ init_fail:
 #define IMG_W 752
 #define IMG_H 480
 
-char imgbuf[IMG_NUMBER][IMG_SIZE];
+char imgbuf[10][(752*480)];
 
 
 void WinUSBDriver::CamRecv(void)
@@ -169,18 +169,18 @@ void WinUSBDriver::CamRecv(void)
         //        if (recv_head_status == 0)
         //            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(head_tmp), 1024, &camRecvLen, 1000);
         //        else
-        //ret = libusb_bulk_transfer(dev_handle, 0x82, (unsigned char *)(img.img[img_index] + recv_index), 512 * 1024, &camRecvLen, 1000);
-        ret = libusb_bulk_transfer(dev_handle, 0x82, (unsigned char *)&img.img[img_index][img_pix_count], 1024*1024, &camRecvLen, 1000);
+        ret = libusb_bulk_transfer(dev_handle, 0x82, (unsigned char *)(img.img[img_index] + img_pix_count), 10 * 1024, &camRecvLen, 1000);
+        //ret = libusb_bulk_transfer(dev_handle, 0x82, (unsigned char *)&imgbuf[img_index][img_pix_count], 10*1024, &camRecvLen, 1000);
         //DBG("cam recv %d %d %d",ret,camRecvLen,0);
         recv_count_1s += camRecvLen;
         img_pix_count += camRecvLen;
 
         if(img_pix_count >= 752*480)
         {
-            //emit showSignal(img_index);
             emit camSignals(img_index);
+            frame_fps++;
             img_index++;
-            if(img_index >= IMG_NUMBER)
+            if(img_index >= IMG_FRAME_SIZE_MAX)
             {
                 img_index = 0;
             }
