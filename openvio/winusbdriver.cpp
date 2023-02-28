@@ -50,6 +50,11 @@ void WinUSBDriver::openSlot(int vid, int pid)
         mlog->show("libusb init success");
     }
 
+    vid = 0x2023;
+    pid = 0x2023;
+
+    mlog->show(QString::number(vid) + " " + QString::number(pid));
+
     dev_handle = libusb_open_device_with_vid_pid(m_libusb_context, vid, pid);
     if (dev_handle == NULL)
     {
@@ -61,14 +66,23 @@ void WinUSBDriver::openSlot(int vid, int pid)
         mlog->show("device open success");
     }
 
-    //    if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
-    //		DBG("Kernel Driver Active\n");
-    //		if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
-    //			DBG("Kernel Driver Detached!\n");
-    //		}
-    //	}
-
+        if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
+            DBG("Kernel Driver Active\n");
+            if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
+                DBG("Kernel Driver Detached!\n");
+            }
+        }
+//libusb_set_configuration(dev_handle, 0);
     ret = libusb_claim_interface(dev_handle, 0);
+
+    if (libusb_kernel_driver_active(dev_handle, 1) == 1) {
+        DBG("Kernel Driver Active\n");
+        if (libusb_detach_kernel_driver(dev_handle, 1) == 0) {
+            DBG("Kernel Driver Detached!\n");
+        }
+    }
+
+    ret = libusb_claim_interface(dev_handle, 1);
     if (ret < 0)
     {
         mlog->show("claim interface fail " + ret);
@@ -79,22 +93,40 @@ void WinUSBDriver::openSlot(int vid, int pid)
         mlog->show("claim interface success");
     }
 
+#define ACM_CTRL_DTR   0x01
+#define ACM_CTRL_RTS   0x02
+    /* Start configuring the device:
+     * - set line state
+     */
+    ret = libusb_control_transfer(dev_handle, 0x21, 0x22, 0,
+                                0, NULL, 0, 0);
+
+    ret = libusb_control_transfer(dev_handle, 0x21, 0x22, 0,
+                                0, NULL, 0, 0);
+    /* - set line encoding: here 9600 8N1
+     * 9600 = 0x2580 ~> 0x80, 0x25 in little endian
+     */
+    static unsigned char encoding[] = { 0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08 };
+    ret = libusb_control_transfer(dev_handle, 0x21, 0x20, 0, 0, encoding,
+                                sizeof(encoding), 0);
+
+
     is_open = true;
 
-    close_try_cnt = 0;
-    while (ctrlCamStop() != 0 && close_try_cnt < 4)
-    {
-        close_try_cnt++;
-    }
+//    close_try_cnt = 0;
+//    while (ctrlCamStop() != 0 && close_try_cnt < 4)
+//    {
+//        close_try_cnt++;
+//    }
 
-    close_try_cnt = 0;
-    while (ctrlIMUStop() != 0 && close_try_cnt < 4)
-    {
-        close_try_cnt++;
-    }
+//    close_try_cnt = 0;
+//    while (ctrlIMUStop() != 0 && close_try_cnt < 4)
+//    {
+//        close_try_cnt++;
+//    }
 
     camThread->start();
-    imuThread->start();
+    //imuThread->start();
 
     mlog->show("open success");
     emit sendStatusSignals(USB_MSG_OPEN_SUCCESS);
@@ -112,91 +144,118 @@ init_fail:
     return;
 }
 
+#define IMG_SIZE    (752*480)
+#define IMG_NUMBER  (10)
+#define IMG_W 752
+#define IMG_H 480
+
+char imgbuf[IMG_NUMBER][IMG_SIZE];
+
+
 void WinUSBDriver::CamRecv(void)
 {
     DBG("cam recv start");
 
-
+    static int img_pix_count = 0;
     int img_index = 0;
     int recv_head_status = 0;
     int findRet = 0;
     FindStr findStr;
     uint8_t head_tmp[1024];
     findStr.config((unsigned char *)"CAMERA", 6);
+
     while (is_open)
     {
         //        if (recv_head_status == 0)
         //            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(head_tmp), 1024, &camRecvLen, 1000);
         //        else
-        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img[img_index] + recv_index), 512 * 1024, &camRecvLen, 1000);
-        if (ret < 0)
+        //ret = libusb_bulk_transfer(dev_handle, 0x82, (unsigned char *)(img.img[img_index] + recv_index), 512 * 1024, &camRecvLen, 1000);
+        ret = libusb_bulk_transfer(dev_handle, 0x82, (unsigned char *)&img.img[img_index][img_pix_count], 1024*1024, &camRecvLen, 1000);
+        //DBG("cam recv %d %d %d",ret,camRecvLen,0);
+        recv_count_1s += camRecvLen;
+        img_pix_count += camRecvLen;
+
+        if(img_pix_count >= 752*480)
         {
-            if (ret != -7 && ret != -9)
+            //emit showSignal(img_index);
+            emit camSignals(img_index);
+            img_index++;
+            if(img_index >= IMG_NUMBER)
             {
-                DBG("cam recv error %d", ret);
-                emit disconnectSignals();
-                break;
+                img_index = 0;
             }
-            else
-            {
-                //DBG("cam recv time out");
-            }
+            img_pix_count = 0;
+
         }
-        else if (camStatus == SENSOR_STATUS_RUNNING)
-        {
-            //DBG("cam recv %d %d %d",recv_head_status,camRecvLen,recv_index);
-            recv_count_1s += camRecvLen;
 
-            if ((recv_head_status == 0) && (camRecvLen == 12))
-            {
-                findRet = findStr.input(img.img[img_index], camRecvLen);
-                if (findRet > 0)
-                {
-                    recv_head_status = 1;
-                    memcpy(img.time[img_index], img.img[img_index] + 6, 6);
-                }
-            }
-            else if (camRecvLen == 12)
-            {
-                findRet = findStr.input(img.img[img_index] + recv_index, camRecvLen);
-                if (findRet > 0)
-                {
-                    recv_head_status = 1;
-                    memcpy(img.time[img_index], img.img[img_index] + recv_index + 6, 6);
-                    recv_index = 0;
-                    recv_head_status = 1;
-                }
-                else
-                {
-                    recv_index = 0;
-                    recv_head_status = 0;
-                }
-            }
-            else if (recv_head_status == 0)
-            {
-                DBG("cam recv error len %d", camRecvLen);
-//                emit disconnectSignals();
-//                break;
-            }
-            else
-            {
-                recv_index += camRecvLen;
-                if (recv_index >= (img.size))
-                {
-                    frame_fps++;
-                    recv_index = 0;
-                    recv_head_status = 0;
+//        if (ret < 0)
+//        {
+//            if (ret != -7 && ret != -9)
+//            {
+//                DBG("cam recv error %d", ret);
+//                //emit disconnectSignals();
+//                //break;
+//            }
+//            else
+//            {
+//                //DBG("cam recv time out");
+//            }
+//        }
+//        else if (camStatus == SENSOR_STATUS_RUNNING)
+//        {
 
-                    emit camSignals(img_index);
+//            recv_count_1s += camRecvLen;
 
-                    img_index++;
-                    if (img_index >= IMG_FRAME_SIZE_MAX)
-                    {
-                        img_index = 0;
-                    }
-                }
-            }
-        }
+//            if ((recv_head_status == 0) && (camRecvLen == 12))
+//            {
+//                findRet = findStr.input(img.img[img_index], camRecvLen);
+//                if (findRet > 0)
+//                {
+//                    recv_head_status = 1;
+//                    memcpy(img.time[img_index], img.img[img_index] + 6, 6);
+//                }
+//            }
+//            else if (camRecvLen == 12)
+//            {
+//                findRet = findStr.input(img.img[img_index] + recv_index, camRecvLen);
+//                if (findRet > 0)
+//                {
+//                    recv_head_status = 1;
+//                    memcpy(img.time[img_index], img.img[img_index] + recv_index + 6, 6);
+//                    recv_index = 0;
+//                    recv_head_status = 1;
+//                }
+//                else
+//                {
+//                    recv_index = 0;
+//                    recv_head_status = 0;
+//                }
+//            }
+//            else if (recv_head_status == 0)
+//            {
+//                DBG("cam recv error len %d", camRecvLen);
+////                emit disconnectSignals();
+////                break;
+//            }
+//            else
+//            {
+//                recv_index += camRecvLen;
+//                if (recv_index >= (img.size))
+//                {
+//                    frame_fps++;
+//                    recv_index = 0;
+//                    recv_head_status = 0;
+
+//                    emit camSignals(img_index);
+
+//                    img_index++;
+//                    if (img_index >= IMG_FRAME_SIZE_MAX)
+//                    {
+//                        img_index = 0;
+//                    }
+//                }
+//            }
+//        }
     }
     DBG("cam recv exit");
 }

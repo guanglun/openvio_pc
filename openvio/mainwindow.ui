@@ -68,7 +68,10 @@
       <item>
        <widget class="QLineEdit" name="le_vid">
         <property name="text">
-         <string>2012</string>
+         <string>2023</string>
+        </property>
+        <property name="maxLength">
+         <number>94</number>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -97,7 +100,7 @@
       <item>
        <widget class="QLineEdit" name="le_pid">
         <property name="text">
-         <string>2012</string>
+         <string>2023</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -517,7 +520,7 @@
      <x>0</x>
      <y>0</y>
      <width>1050</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

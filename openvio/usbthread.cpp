@@ -21,7 +21,7 @@ void USBThread::run()
         qwindriver->CamRecv();
         DBG("qwindriver->CamRecv();");
     }else if(!buikName.compare(QString::fromUtf8("imu"))){
-        qwindriver->IMURecv();
+        //qwindriver->IMURecv();
         DBG("qwindriver->IMURecv();");
     }
 

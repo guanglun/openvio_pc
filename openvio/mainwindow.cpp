@@ -68,59 +68,59 @@ void MainWindow::camSlot(int index)
     QPixmap pixImage;
     QDateTime timeNow;
 
-    t1 = (uint32_t)(qwinusb->img.time[index][0]<<24);
-    t1 |= (uint32_t)(qwinusb->img.time[index][1]<<16);
-    t1 |= (uint32_t)(qwinusb->img.time[index][2]<<8);
-    t1 |= (uint32_t)(qwinusb->img.time[index][3]<<0);
+//    t1 = (uint32_t)(qwinusb->img.time[index][0]<<24);
+//    t1 |= (uint32_t)(qwinusb->img.time[index][1]<<16);
+//    t1 |= (uint32_t)(qwinusb->img.time[index][2]<<8);
+//    t1 |= (uint32_t)(qwinusb->img.time[index][3]<<0);
 
-    t2 = (uint16_t)(qwinusb->img.time[index][4]<<8);
-    t2 |= (uint16_t)(qwinusb->img.time[index][5]<<0);
+//    t2 = (uint16_t)(qwinusb->img.time[index][4]<<8);
+//    t2 |= (uint16_t)(qwinusb->img.time[index][5]<<0);
 
-    if(is_first == true)
-    {
-        is_first = false;
-        t1_old = t1;
-        t2_old = t2;
-        return;
-    }
+//    if(is_first == true)
+//    {
+//        is_first = false;
+//        t1_old = t1;
+//        t2_old = t2;
+//        return;
+//    }
 
-    if(t2 > t2_old)
-    {
-        timer = t2-t2_old;
-    }else{
-        timer = (uint32_t)t2 + 50000 - t2_old;
-    }
+//    if(t2 > t2_old)
+//    {
+//        timer = t2-t2_old;
+//    }else{
+//        timer = (uint32_t)t2 + 50000 - t2_old;
+//    }
 
-    t1_old = t1;
-    t2_old = t2;
+//    t1_old = t1;
+//    t2_old = t2;
 
-    d_time = timer*0.00001;
+//    d_time = timer*0.00001;
     //DBG("cam %d\t%d\t%d\t%f",t1,t2,timer,d_time);
 
 
-    if(qwinusb->cam_id == OV7725_ID)
+//    if(qwinusb->cam_id == OV7725_ID)
+//    {
+//        if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
+//        {
+//            for(int i=0;i<qwinusb->img.size/2;i++)
+//            {
+//                qwinusb->img.img_tmp[i] = qwinusb->img.img[index][i*2];
+//            }
+//            myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
+//            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
+//        }else if(qwinusb->pixformat == PIXFORMAT_RGB565)
+//        {
+//            for(int i=0;i<qwinusb->img.size/2;i++)
+//            {
+//                qwinusb->img.img_tmp[i*2+1] = qwinusb->img.img[index][i*2];
+//                qwinusb->img.img_tmp[i*2] = qwinusb->img.img[index][i*2+1];
+//            }
+//            myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_RGB16);
+//            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
+//        }
+//    }else if(qwinusb->cam_id == MT9V034_ID)
     {
-        if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
-        {
-            for(int i=0;i<qwinusb->img.size/2;i++)
-            {
-                qwinusb->img.img_tmp[i] = qwinusb->img.img[index][i*2];
-            }
-            myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
-            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
-        }else if(qwinusb->pixformat == PIXFORMAT_RGB565)
-        {
-            for(int i=0;i<qwinusb->img.size/2;i++)
-            {
-                qwinusb->img.img_tmp[i*2+1] = qwinusb->img.img[index][i*2];
-                qwinusb->img.img_tmp[i*2] = qwinusb->img.img[index][i*2+1];
-            }
-            myImage = QImage(qwinusb->img.img_tmp,qwinusb->img.width,qwinusb->img.high,QImage::Format_RGB16);
-            ui->lb_img->setPixmap(QPixmap::fromImage(myImage));
-        }
-    }else if(qwinusb->cam_id == MT9V034_ID)
-    {
-        if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
+        //if(qwinusb->pixformat == PIXFORMAT_GRAYSCALE)
         {
             myImage = QImage(qwinusb->img.img[index],qwinusb->img.width,qwinusb->img.high,QImage::Format_Grayscale8);
             pixImage = QPixmap::fromImage(myImage);
@@ -135,9 +135,10 @@ void MainWindow::camSlot(int index)
                 isCapImage = false;
             }
         }
-    }else{
-        return;
     }
+//    else{
+//        return;
+//    }
     
     //QImage myImage = QImage(qwinusb->img.img,qwinusb->img.width,qwinusb->img.high,QImage::Format_);
     
@@ -297,7 +298,7 @@ void MainWindow::onTimeOut()
     qwinusb->recv_count_1s = 0;
     status_speed->setText(str);
     
-
+    qDebug() << str;
 }
 
 void MainWindow::on_pb_cam_start_clicked()
