@@ -94,7 +94,7 @@ void WinUSBDriver::openSlot(int vid, int pid)
     }
 
     camThread->start();
-    imuThread->start();
+    //imuThread->start();
 
     mlog->show("open success");
     emit sendStatusSignals(USB_MSG_OPEN_SUCCESS);
@@ -122,7 +122,8 @@ void WinUSBDriver::CamRecv(void)
     int findRet = 0;
     FindStr findStr;
     uint8_t head_tmp[1024];
-    findStr.config((unsigned char *)"CAMERA", 6);
+    camStatus = SENSOR_STATUS_RUNNING;
+    //findStr.config((unsigned char *)"CAMERA", 6);
     while (is_open)
     {
         //        if (recv_head_status == 0)
@@ -139,46 +140,47 @@ void WinUSBDriver::CamRecv(void)
             }
             else
             {
-                //DBG("cam recv time out");
+                DBG("cam recv time out");
             }
         }
-        else if (camStatus == SENSOR_STATUS_RUNNING)
+        else //if (camStatus == SENSOR_STATUS_RUNNING)
         {
             //DBG("cam recv %d %d %d",recv_head_status,camRecvLen,recv_index);
+            DBG("cam recv %d",camRecvLen);
             recv_count_1s += camRecvLen;
 
-            if ((recv_head_status == 0) && (camRecvLen == 12))
-            {
-                findRet = findStr.input(img.img[img_index], camRecvLen);
-                if (findRet > 0)
-                {
-                    recv_head_status = 1;
-                    memcpy(img.time[img_index], img.img[img_index] + 6, 6);
-                }
-            }
-            else if (camRecvLen == 12)
-            {
-                findRet = findStr.input(img.img[img_index] + recv_index, camRecvLen);
-                if (findRet > 0)
-                {
-                    recv_head_status = 1;
-                    memcpy(img.time[img_index], img.img[img_index] + recv_index + 6, 6);
-                    recv_index = 0;
-                    recv_head_status = 1;
-                }
-                else
-                {
-                    recv_index = 0;
-                    recv_head_status = 0;
-                }
-            }
-            else if (recv_head_status == 0)
-            {
-                DBG("cam recv error len %d", camRecvLen);
-//                emit disconnectSignals();
-//                break;
-            }
-            else
+//            if ((recv_head_status == 0) && (camRecvLen == 12))
+//            {
+//                findRet = findStr.input(img.img[img_index], camRecvLen);
+//                if (findRet > 0)
+//                {
+//                    recv_head_status = 1;
+//                    memcpy(img.time[img_index], img.img[img_index] + 6, 6);
+//                }
+//            }
+//            else if (camRecvLen == 12)
+//            {
+//                findRet = findStr.input(img.img[img_index] + recv_index, camRecvLen);
+//                if (findRet > 0)
+//                {
+//                    recv_head_status = 1;
+//                    memcpy(img.time[img_index], img.img[img_index] + recv_index + 6, 6);
+//                    recv_index = 0;
+//                    recv_head_status = 1;
+//                }
+//                else
+//                {
+//                    recv_index = 0;
+//                    recv_head_status = 0;
+//                }
+//            }
+//            else if (recv_head_status == 0)
+//            {
+//                DBG("cam recv error len %d", camRecvLen);
+////                emit disconnectSignals();
+////                break;
+//            }
+//            else
             {
                 recv_index += camRecvLen;
                 if (recv_index >= (img.size))
