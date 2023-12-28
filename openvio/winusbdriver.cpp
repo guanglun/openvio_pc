@@ -122,6 +122,7 @@ void WinUSBDriver::CamRecv(void)
     int findRet = 0;
     FindStr findStr;
     uint8_t head_tmp[1024];
+    uint32_t fcount,cfcount;
     camStatus = SENSOR_STATUS_RUNNING;
     //findStr.config((unsigned char *)"CAMERA", 6);
     while (is_open)
@@ -129,7 +130,7 @@ void WinUSBDriver::CamRecv(void)
         //        if (recv_head_status == 0)
         //            ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(head_tmp), 1024, &camRecvLen, 1000);
         //        else
-        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img[img_index] + recv_index), 512 * 1024, &camRecvLen, 1000);
+        ret = libusb_bulk_transfer(dev_handle, CAM_EPADDR, (unsigned char *)(img.img[img_index] + recv_index), 512 * 1024, &camRecvLen, 500);
         if (ret < 0)
         {
             if (ret != -7 && ret != -9)
@@ -143,21 +144,66 @@ void WinUSBDriver::CamRecv(void)
                 DBG("cam recv time out");
             }
         }
-        else //if (camStatus == SENSOR_STATUS_RUNNING)
+        else if (camStatus == SENSOR_STATUS_RUNNING)
         {
             //DBG("cam recv %d %d %d",recv_head_status,camRecvLen,recv_index);
-            DBG("cam recv %d",camRecvLen);
+            //DBG("cam recv %d",camRecvLen);
             recv_count_1s += camRecvLen;
 
-//            if ((recv_head_status == 0) && (camRecvLen == 12))
-//            {
-//                findRet = findStr.input(img.img[img_index], camRecvLen);
-//                if (findRet > 0)
-//                {
-//                    recv_head_status = 1;
-//                    memcpy(img.time[img_index], img.img[img_index] + 6, 6);
-//                }
-//            }
+            if ((recv_head_status < 3) && (camRecvLen == 90240))
+            {
+                recv_head_status++;
+                recv_index += camRecvLen;
+            }else if ((recv_head_status == 3) && (camRecvLen == 90248))
+            {
+                recv_head_status = 0;
+                frame_fps++;
+
+
+                unsigned char *head = img.img[img_index] + recv_index + 90240;
+
+                if(*(head+0) == 'C' &&
+                        *(head+1) == 'A' &&
+                        *(head+2) == 'M' &&
+                        *(head+3) == 'E')
+                {
+                    fcount = *(uint32_t *)(head+4);
+                    if(cfcount == fcount)
+                    {
+                        cfcount++;
+
+                        img.fcount[img_index] = fcount;
+                        emit camSignals(img_index);
+
+                        img_index++;
+                        if (img_index >= IMG_FRAME_SIZE_MAX)
+                        {
+                            img_index = 0;
+                        }
+
+                    }else{
+                        cfcount = fcount + 1;
+                        DBG("cam cfcount ERROR %d %d",fcount,cfcount);
+                    }
+
+
+                }else{
+                    DBG("cam Check ERROR !! %C%C%C%C",*(head+0),*(head+1),*(head+2),*(head+3));
+                }
+
+                recv_index = 0;
+
+            }else{
+                if(camRecvLen == 90248)
+                {
+                    recv_head_status = 0;
+                    recv_index = 0;
+                }
+                DBG("cam ERROR !!");
+            }
+
+
+
 //            else if (camRecvLen == 12)
 //            {
 //                findRet = findStr.input(img.img[img_index] + recv_index, camRecvLen);
@@ -181,23 +227,23 @@ void WinUSBDriver::CamRecv(void)
 ////                break;
 //            }
 //            else
-            {
-                recv_index += camRecvLen;
-                if (recv_index >= (img.size))
-                {
-                    frame_fps++;
-                    recv_index = 0;
-                    recv_head_status = 0;
+//            {
+//                recv_index += camRecvLen;
+//                if (recv_index >= (img.size))
+//                {
+//                    frame_fps++;
+//                    recv_index = 0;
+//                    recv_head_status = 0;
 
-                    emit camSignals(img_index);
+//                    emit camSignals(img_index);
 
-                    img_index++;
-                    if (img_index >= IMG_FRAME_SIZE_MAX)
-                    {
-                        img_index = 0;
-                    }
-                }
-            }
+//                    img_index++;
+//                    if (img_index >= IMG_FRAME_SIZE_MAX)
+//                    {
+//                        img_index = 0;
+//                    }
+//                }
+//            }
         }
     }
     DBG("cam recv exit");

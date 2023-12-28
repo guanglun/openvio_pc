@@ -129,10 +129,10 @@ void MainWindow::camSlot(int index)
             {
                 timeNow =  QDateTime::currentDateTime();
                 QString current_date = timeNow.toString("yyyy_MM_dd_hh_mm_ss_zzz");
-                QString file_name = current_date+".bmp";
+                QString file_name = QString::number(qwinusb->img.fcount[index])+".bmp";
                 pixImage.save(file_name);
 
-                isCapImage = false;
+                //isCapImage = false;
             }
         }
     }else{

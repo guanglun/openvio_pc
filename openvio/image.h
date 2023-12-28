@@ -23,6 +23,7 @@ public:
     int width,high,index,size;
     Image();
     unsigned char gs_bpp;
+    uint32_t fcount[IMG_FRAME_SIZE_MAX];
     void setImgSize(uint8_t frame_size_num);
     bool recv(unsigned char* data,int len);
     void CONVERT_YUV420PtoRGB24(unsigned char* yuv_src,unsigned char* rgb_dst,int nWidth,int nHeight);
